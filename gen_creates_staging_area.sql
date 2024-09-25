@@ -144,12 +144,12 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'TIMESTAMPTZ';
+            tipo_col := 'TIMESTAMP';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
           WHEN reg_datail.TYPE = 'TI' THEN
-            tipo_col := 'TIMETZ';
+            tipo_col := 'TIME';
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN
@@ -169,12 +169,12 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'TIMESTAMPTZ';
+            tipo_col := 'TIMESTAMP';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
           WHEN reg_datail.TYPE = 'TI' THEN
-            tipo_col := 'TIMETZ';
+            tipo_col := 'TIME';
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN
@@ -465,12 +465,12 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'TIMESTAMPTZ';
+            tipo_col := 'TIMESTAMP';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
           WHEN reg_datail.TYPE = 'TI' THEN
-            tipo_col := 'TIMETZ';
+            tipo_col := 'TIME';
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN
@@ -490,12 +490,12 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'TIMESTAMPTZ';
+            tipo_col := 'TIMESTAMP';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
           WHEN reg_datail.TYPE = 'TI' THEN
-            tipo_col := 'TIMETZ';
+            tipo_col := 'TIME';
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN

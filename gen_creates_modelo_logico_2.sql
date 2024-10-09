@@ -117,15 +117,15 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL SERIAL');
+                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
                 else
                   if ((r_mtdt_modelo_logico_TABLA.CI = 'N' or r_mtdt_modelo_logico_TABLA.CI = 'F') and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL SERIAL');
+                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                     else
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' SERIAL');
+                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
@@ -204,15 +204,15 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL SERIAL');
+                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
                 else              
                   if (r_mtdt_modelo_logico_TABLA.CI = 'N' and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL SERIAL');
+                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                     else
                       --DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' SERIAL');
+                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
@@ -477,7 +477,7 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL SERIAL');
+                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
                   else
                     if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
@@ -562,7 +562,7 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL SERIAL');
+                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
                   else
                     if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then

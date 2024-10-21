@@ -3416,7 +3416,7 @@ begin
       UTL_FILE.put_line(fich_salida_pkg,'    /* Gestiono la partición en la que se van a insertar los nuevos registros */');
       UTL_FILE.put_line(fich_salida_pkg,'    /* Crearé una nueva tabla que después la añadiré como partición a la tabla particionada ' || reg_tabla.TABLE_NAME || ' */');
       UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''drop table if exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ''';');
-      UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ' (like ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ')'';');
+      UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ' (like ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' INCLUDING DEFAULTS INCLUDING CONSTRAINTS)'';');
       --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''drop table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in;');
       --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in || '' ( like '' || ''' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || '' including defaults including constraints)'';');
     end if;
@@ -3426,7 +3426,7 @@ begin
       UTL_FILE.put_line(fich_salida_pkg,'    /* Gestiono la partición en la que se van a insertar los nuevos registros */');
       UTL_FILE.put_line(fich_salida_pkg,'    /* Crearé una nueva tabla que después la añadiré como partición a la tabla particionada ' || reg_tabla.TABLE_NAME || ' */');
       UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''drop table if exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ''';');
-      UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ' (like ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ')'';');
+      UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ' (like ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' INCLUDING DEFAULTS INCLUDING CONSTRAINTS)'';');
       --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''drop table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in;');
       --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in || '' ( like '' || ''' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || '' including defaults including constraints)'';');
     end if;

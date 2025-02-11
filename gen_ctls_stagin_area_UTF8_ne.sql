@@ -18,8 +18,12 @@ DECLARE
       trim(TYPE_VALIDATION) "TYPE_VALIDATION",  
       trim(FILE_VALIDATION) "FILE_VALIDATION"   /* (20160818) Angel Ruiz. NF. Validar en otro directorio */
     FROM MTDT_INTERFACE_SUMMARY    
-    WHERE SOURCE <> 'SA';  -- Este origen es el que se ha considerado para las dimensiones que son de integracion ya que se cargan a partir de otras dimensiones de SA 
-    --and CONCEPT_NAME in ('TRAFE_CU_MVNO', 'TRAFD_CU_MVNO', 'TRAFV_CU_MVNO');
+    WHERE SOURCE <> 'SA' -- Este origen es el que se ha considerado para las dimensiones que son de integracion ya que se cargan a partir de otras dimensiones de SA 
+    and CONCEPT_NAME in ('ACCOUNT', 'ACCOUNT_FIX'
+    , 'SUBSCRIBER', 'SUBSCRIBER_FIX', 'CSTMR', 'CSTMR_FIX', 'AR_CTC_PRFL', 'AR_CTC_PRFL_FIX'
+    , 'CNL_FIX', 'CSTMR_CLSS', 'CSTMR_CLSS_FIX', 'GEO_AREA', 'GEO_AREA_FIX', 'PD', 'PD_FIX', 'PYMT_ENT'
+    , 'PYMT_ENT_FIX', 'RTLR', 'RTLR_FIX'
+    );
     --and trim(CONCEPT_NAME) in ('CUENTA', 'PARQUE_ABO_PRE');
     --and TRIM(CONCEPT_NAME) in ('RECARGAS_MVNO', 'CANAL', 'CADENA', 'SUBTIPO_CANAL', 'MEDIO_RECARGA', 'ERROR_RECARGA');
     --AND DELAYED = 'S';

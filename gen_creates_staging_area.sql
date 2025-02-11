@@ -86,6 +86,7 @@
   OWNER_DM                 VARCHAR2(60);
   OWNER_MTDT               VARCHAR2(60);
   TABLESPACE_SA            VARCHAR2(60);
+  TABLESPACE_SA_IDX         VARCHAR2(60);
   NAME_DM                            VARCHAR(60);
   nombre_tabla_reducido    VARCHAR2(30);
   v_existe_tablas_RE       integer:=0;
@@ -101,6 +102,7 @@ BEGIN
   SELECT VALOR INTO OWNER_T FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_T';
   SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM';
   SELECT VALOR INTO TABLESPACE_SA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_SA';
+  SELECT VALOR INTO TABLESPACE_SA_IDX FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_SA_IDX';
   SELECT VALOR INTO NAME_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'NAME_DM';  
   /* (20150119) FIN*/
   
@@ -390,7 +392,7 @@ BEGIN
         FOR indx IN lista_par.FIRST .. lista_par.LAST
         LOOP
           IF indx = lista_par.LAST THEN
-            DBMS_OUTPUT.put_line(lista_par (indx) || ');');
+            DBMS_OUTPUT.put_line(lista_par (indx) || ') TABLESPACE ' || TABLESPACE_SA_IDX || ';');
           ELSE
             DBMS_OUTPUT.put_line(lista_par (indx) || ', ');
           END IF;
@@ -400,7 +402,7 @@ BEGIN
         FOR indx IN lista_pk.FIRST .. lista_pk.LAST
         LOOP
           IF indx = lista_pk.LAST THEN
-            DBMS_OUTPUT.put_line(lista_pk (indx) || ');');
+            DBMS_OUTPUT.put_line(lista_pk (indx) || ') TABLESPACE ' || TABLESPACE_SA_IDX || ';');
           ELSE
             if indx = lista_pk.FIRST then
               FOR indy IN lista_par.FIRST .. lista_par.LAST
@@ -419,7 +421,7 @@ BEGIN
           FOR indy IN lista_par.FIRST .. lista_par.LAST
           LOOP
               IF indy = lista_par.LAST THEN
-                DBMS_OUTPUT.put_line(lista_par (indy) || '); ');
+                DBMS_OUTPUT.put_line(lista_par (indy) || ') TABLESPACE ' || TABLESPACE_SA_IDX || '; ');
               ELSE
                 DBMS_OUTPUT.put_line(lista_par (indy) || ',');
               END IF;
@@ -551,7 +553,7 @@ BEGIN
         FOR indy IN lista_par.FIRST .. lista_par.LAST
         LOOP
             IF indy = lista_par.LAST THEN
-              DBMS_OUTPUT.put_line(lista_par (indy) || '); ');
+              DBMS_OUTPUT.put_line(lista_par (indy) || ') TABLESPACE ' || TABLESPACE_SA_IDX || ';');
             ELSE
               DBMS_OUTPUT.put_line(lista_par (indy) || ',');
             END IF;
@@ -579,7 +581,7 @@ BEGIN
         FOR indx IN lista_pk.FIRST .. lista_pk.LAST
         LOOP
           IF indx = lista_pk.LAST THEN
-            DBMS_OUTPUT.put_line(lista_pk (indx) || '); ');
+            DBMS_OUTPUT.put_line(lista_pk (indx) || ') TABLESPACE ' || TABLESPACE_SA_IDX || ';');
           ELSE
             DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
           END IF;
@@ -588,11 +590,11 @@ BEGIN
         if (lista_pk.COUNT = 0 and lista_par.COUNT>0) then
           /* Tenemos el caso de que la tabla no tiene PK pero si esta particionada */
           /* Segun los requerimientos de MySQL podemos crear un indice por los campos del particionado */
-          DBMS_OUTPUT.put_line('CREATE INDEX ON ' || NAME_DM || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME || ' (');
+          DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME || ' (');
           FOR indy IN lista_par.FIRST .. lista_par.LAST
           LOOP
               IF indy = lista_par.LAST THEN
-                DBMS_OUTPUT.put_line(lista_par (indy) || '); ');
+                DBMS_OUTPUT.put_line(lista_par (indy) || ') TABLESPACE ' || TABLESPACE_SA_IDX || ';');
               ELSE
                 DBMS_OUTPUT.put_line(lista_par (indy) || ',');
               END IF;

@@ -20,6 +20,7 @@ DECLARE
     FROM MTDT_MODELO_SUMMARY
     WHERE TRIM(CI) <> 'P'
     ;    /* Las que poseen un valor "P" en esta columna son las tablas de PERMITED_VALUES, por lo que no hya que generar su modelo */
+
     
   CURSOR c_mtdt_modelo_logico_COLUMNA (table_name_in IN VARCHAR2)
   IS
@@ -114,12 +115,12 @@ BEGIN
         IF primera_col = 1 THEN /* Si es primera columna */
           IF (r_mtdt_modelo_logico_COLUMNA.VDEFAULT IS NOT NULL) THEN
             CASE
-              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
+              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
                   DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
                 else
-                  if ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F') and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
+                  if ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F')  and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
                       DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
@@ -129,7 +130,13 @@ BEGIN
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
-                      v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */
+                      /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/                      
+                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      else
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      end if;                    
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                       else
@@ -160,8 +167,8 @@ BEGIN
             END CASE;
           ELSE    /* NO TIENE VALOR POR DEFECTO */
             CASE
-              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
-                if (r_mtdt_modelo_logico_TABLA.CI = 'N' and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
+              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
+                if ((r_mtdt_modelo_logico_TABLA.CI = 'F' or r_mtdt_modelo_logico_TABLA.CI = 'I') and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                     DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
                   else
@@ -169,7 +176,13 @@ BEGIN
                   end if;
                 else
                   if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
-                    v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                    /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */
+                    /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/
+                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                        v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                    else
+                        v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                    end if;                    
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
                     else
@@ -201,12 +214,12 @@ BEGIN
         ELSE  /* si no es primera columna */
           IF (r_mtdt_modelo_logico_COLUMNA.VDEFAULT IS NOT NULL) THEN
             CASE 
-              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
+              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 or INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
                   DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
                 else              
-                  if (r_mtdt_modelo_logico_TABLA.CI = 'N' and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
+                  if ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F')  and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
                       DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
@@ -216,7 +229,13 @@ BEGIN
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
-                      v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;                  
+                      /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */
+                      /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/                      
+                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      else
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      end if;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                       else
@@ -246,7 +265,7 @@ BEGIN
               END CASE;
           ELSE  /* Si no existen valores por defecto */
             CASE 
-              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
+              WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 or INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                 if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                     DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
@@ -255,7 +274,14 @@ BEGIN
                   end if;
                 else
                   if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
-                    v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                    /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */                  
+                    /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/                    
+                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                        v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                    else
+                        v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                    end if;
+                    /* (20250126) Angel Ruiz. FIN*/
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
                     else
@@ -287,7 +313,7 @@ BEGIN
         /* (20151217) Angel Ruiz. BUG. Si se crea un campo AUTOINCREMENT, este debe estar en la PK */
         /* ya que si no habra un error */
         --IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' then
-        IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' or (r_mtdt_modelo_logico_TABLA.CI = 'N' and r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) then
+        IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' or ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F') and r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) then
           lista_pk.EXTEND;
           lista_pk(lista_pk.LAST) := r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
         END IF;
@@ -452,6 +478,13 @@ BEGIN
         end if;
       end if;
       
+      /* (20250124) Angel Ruiz. Modifico para distribuir las tablas de dimensiones */
+      if ((regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')), '^?+D_',1,'i') >0)
+        or (regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM',1,'i') >0)
+      )  then  /* Se trata de una dimension  */
+        DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ''');');
+      end if;
+      /* (20250124) Angel Ruiz. Fin */
       --DBMS_OUTPUT.put_line(';');
       lista_pk.DELETE;      /* Borramos los elementos de la lista */
       DBMS_OUTPUT.put_line('');
@@ -474,7 +507,7 @@ BEGIN
           IF primera_col = 1 THEN /* Si es primera columna */
             IF (r_mtdt_modelo_logico_COLUMNA.VDEFAULT IS NOT NULL) THEN
               CASE
-                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
+                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
                     DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
@@ -486,8 +519,15 @@ BEGIN
                         DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                       end if;
                     else
-                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
-                        v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
+                        /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */                  
+                        /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/                        
+                        if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                            v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                        else
+                            v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                        end if;
+                        /* (20250126) Angel Ruiz. FIN*/
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                           DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                         else
@@ -518,7 +558,7 @@ BEGIN
               END CASE;
             ELSE
               CASE
-                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
+                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                   if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT'  || ' NOT NULL');
@@ -527,7 +567,13 @@ BEGIN
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
-                      v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */                  
+                      /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/                      
+                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      else
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      end if;                      
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
                       else
@@ -559,7 +605,7 @@ BEGIN
           ELSE  /* si no es primera columna */
             IF (r_mtdt_modelo_logico_COLUMNA.VDEFAULT IS NOT NULL) THEN
               CASE 
-                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
+                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
                     DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
@@ -571,8 +617,15 @@ BEGIN
                         DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
                       end if;
                     else
-                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then                
-                        v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
+                        /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */                  
+                        /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/
+                        if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                            v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                        else
+                            v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                        end if;
+                        /* (20250126) Angel Ruiz. FIN*/
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                           DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                         else
@@ -603,7 +656,7 @@ BEGIN
                 END CASE;
             ELSE
               CASE
-                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
+                WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                   if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT'  || ' NOT NULL');
@@ -611,8 +664,15 @@ BEGIN
                       DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
                     end if;
                   else
-                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then                
-                      v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then                
+                      /* (20250126) Angel Ruiz. Las tablas DWF_ llevan el campo CVE_DIA y también el FCT_DT_KEY por lo que he de poner el siguiente if para que tome el campo correcto */                  
+                      /* v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;*/
+                      if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' and regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) then
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      else
+                          v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
+                      end if;
+                      /* (20250126) Angel Ruiz. FIN */
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
                       else
@@ -696,9 +756,18 @@ BEGIN
         else
           DBMS_OUTPUT.put_line(';');
         end if;
-      end if;      
+        /* (20250124) Angel Ruiz. Modifico para distribuir las tablas de dimensiones */
+        if ((regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')), '^?+D_',1,'i') >0)
+            or (regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM',1,'i') >0)
+        )  then  /* Se trata de una dimension  */      
+          DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || 'T_' || nombre_tabla_reducido || ''');');    
+        end if;
+        /* (20250124) Angel Ruiz. Fin */        
+      end if;
+      
       lista_pk.DELETE;      /* Borramos los elementos de la lista */
       DBMS_OUTPUT.put_line('');
+      
       
       /****************************************************************************************************/
       /* Viene la parte donde se generan los INSERTS por defecto y la SECUENCIA */
@@ -710,14 +779,14 @@ BEGIN
         --DBMS_OUTPUT.put_line('MINVALUE 1 START WITH 1 INCREMENT BY 1;');
         --DBMS_OUTPUT.put_line('');        
       --end if;
-      
       if (r_mtdt_modelo_logico_TABLA.CI = 'N' or r_mtdt_modelo_logico_TABLA.CI = 'F' or r_mtdt_modelo_logico_TABLA.CI = 'I') then
         /* Generamos los inserts para aquellas tablas que no son de carga inicial */
         --if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4) ,'??D_',1,'i') >0 or regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4), 'DMT_',1,'i') >0 
         --or regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4), 'DWD_',1,'i') >0) then
-        if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')) ,'^?+D_',1,'i') >0 or regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM$',1,'i') >0 
+        if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')) ,'^?+D_',1,'i') >0 or regexp_count(trim(r_mtdt_modelo_logico_TABLA.TABLE_NAME), '^?+_DIM$',1,'i') >0 
         ) then
-          DBMS_OUTPUT.put_line('');        
+          DBMS_OUTPUT.put_line('');
+          DBMS_OUTPUT.put_line('BEGIN;');
           /* Primero el INSERT "NO APLICA" */
           --DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
           DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
@@ -734,10 +803,10 @@ BEGIN
                 DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := '-2';
+                    cadena_values := '-1';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := '-2';
+                      cadena_values := '-1';
                     else
                       if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
@@ -777,7 +846,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-2';
+                        cadena_values := '-1';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -796,7 +865,7 @@ BEGIN
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-2';
+                        cadena_values := '-1';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -821,10 +890,10 @@ BEGIN
                 DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := cadena_values || ', -2';
+                    cadena_values := cadena_values || ', -1';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3),'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0 ) then
-                      cadena_values := cadena_values || ', -2';
+                      cadena_values := cadena_values || ', -1';
                     else
                         if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                           if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
@@ -883,7 +952,7 @@ BEGIN
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -2';
+                        cadena_values := cadena_values || ', -1';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -925,10 +994,10 @@ BEGIN
                 DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4),'CVE_',1,'i') >0 THEN
-                    cadena_values := '-3';
+                    cadena_values := '-2';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := '-3';
+                      cadena_values := '-2';
                     else
                         if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                           if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
@@ -968,7 +1037,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-3';
+                        cadena_values := '-2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -987,7 +1056,7 @@ BEGIN
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-3';
+                        cadena_values := '-2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -1012,10 +1081,10 @@ BEGIN
                 DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := cadena_values || ', -3';
+                    cadena_values := cadena_values || ', -2';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := cadena_values || ', -3';
+                      cadena_values := cadena_values || ', -2';
                     else
                       if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
@@ -1055,7 +1124,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -3';
+                        cadena_values := cadena_values || ', -2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1074,7 +1143,7 @@ BEGIN
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -3';
+                        cadena_values := cadena_values || ', -2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1116,7 +1185,7 @@ BEGIN
                 DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := '-1';
+                    cadena_values := '-3';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
                       cadena_values :=  '-1';
@@ -1178,7 +1247,7 @@ BEGIN
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-1';
+                        cadena_values := '-3';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -1203,10 +1272,10 @@ BEGIN
                 DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := cadena_values || ', -1';
+                    cadena_values := cadena_values || ', -3';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := cadena_values || ', -1';
+                      cadena_values := cadena_values || ', -3';
                     else
                       if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
@@ -1233,7 +1302,7 @@ BEGIN
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         case 
                           when longitud_des_numerico = 2 then
-                            cadena_values := cadena_values || ', ''NA''';
+                            cadena_values := cadena_values || ', ''NI''';
                           when longitud_des_numerico = 1 then
                             cadena_values := cadena_values || ', ''N''';
                         end case;
@@ -1246,7 +1315,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -1';
+                        cadena_values := cadena_values || ', -3';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1265,7 +1334,7 @@ BEGIN
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -1';
+                        cadena_values := cadena_values || ', -3';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1290,7 +1359,7 @@ BEGIN
           DBMS_OUTPUT.put_line(')');
           DBMS_OUTPUT.put_line('VALUES');
           DBMS_OUTPUT.put_line('(' || cadena_values || ');');
-          DBMS_OUTPUT.put_line('commit;');
+          DBMS_OUTPUT.put_line('COMMIT;');
           DBMS_OUTPUT.put_line('');
           CLOSE c_mtdt_modelo_logico_COLUMNA;
         end if;

@@ -127,7 +127,7 @@ BEGIN
       INTO reg_summary;
       EXIT WHEN dtd_interfaz_summary%NOTFOUND;
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'SA_' || reg_summary.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'STG_' || reg_summary.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
       primera_col := 1;
@@ -209,7 +209,7 @@ BEGIN
         END LOOP;
         DBMS_OUTPUT.put_line('PARTITION BY RANGE (' || lista_campos_particion || ');');   
         if (length(reg_summary.CONCEPT_NAME) <= 18) then
-          v_nombre_particion := 'SA_' || reg_summary.CONCEPT_NAME;
+          v_nombre_particion := 'STG_' || reg_summary.CONCEPT_NAME;
         else
           v_nombre_particion := reg_summary.CONCEPT_NAME;
         end if;
@@ -373,7 +373,7 @@ BEGIN
       /* COMIENZO LA GESTION DE LA CREACION DE INDICES LOCALES O GLOBALES */
       IF (lista_pk.COUNT > 0 and lista_par.COUNT = 0) THEN
         /* tenemos una tabla normal no particionada */
-        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SA_'  || reg_summary.CONCEPT_NAME || ' (');
+        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'STG_'  || reg_summary.CONCEPT_NAME || ' (');
 
         FOR indx IN lista_pk.FIRST .. lista_pk.LAST
         LOOP
@@ -388,7 +388,7 @@ BEGIN
         /* Tenemos una tabla particionada y con PK */
         /* En posgresql creamos un índice por la clave de particionado y otro por la PK */
         /* Creamos el índice de la key de particionado */
-        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SA_'  || reg_summary.CONCEPT_NAME || ' (');
+        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'STG_'  || reg_summary.CONCEPT_NAME || ' (');
         FOR indx IN lista_par.FIRST .. lista_par.LAST
         LOOP
           IF indx = lista_par.LAST THEN
@@ -398,7 +398,7 @@ BEGIN
           END IF;
         END LOOP;
         /* Creamos el índice de la PK */
-        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SA_'  || reg_summary.CONCEPT_NAME || ' (');
+        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'STG_'  || reg_summary.CONCEPT_NAME || ' (');
         FOR indx IN lista_pk.FIRST .. lista_pk.LAST
         LOOP
           IF indx = lista_pk.LAST THEN
@@ -417,7 +417,7 @@ BEGIN
         if (lista_pk.COUNT = 0 and lista_par.COUNT>0) then
           /* Tenemos el caso de que la tabla no tiene PK pero si esta particionada */
           /* Segun los requerimientos de MySQL podemos crear un indice por los campos del particionado */
-          DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SA_' || reg_summary.CONCEPT_NAME || ' (');
+          DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'STG_' || reg_summary.CONCEPT_NAME || ' (');
           FOR indy IN lista_par.FIRST .. lista_par.LAST
           LOOP
               IF indy = lista_par.LAST THEN
@@ -448,7 +448,7 @@ BEGIN
       INTO reg_summary_history;
       EXIT WHEN dtd_interfaz_summary_history%NOTFOUND;  
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'STH_' || reg_summary_history.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary_history.CONCEPT_NAME, reg_summary_history.SOURCE);
       primera_col := 1;
@@ -549,7 +549,7 @@ BEGIN
         /* Tenemos una tabla particionada y con PK */
         /* En posgresql creamos un índice por la clave de particionado y otro por la PK */
         /* Creamos el índice de la key de particionado */
-        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME || ' (');
+        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'STH_' || reg_summary_history.CONCEPT_NAME || ' (');
         FOR indy IN lista_par.FIRST .. lista_par.LAST
         LOOP
             IF indy = lista_par.LAST THEN
@@ -577,7 +577,7 @@ BEGIN
           end if;
         END LOOP;
         /* Creamos el índice de la PK */
-        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SAH_'  || reg_summary_history.CONCEPT_NAME || ' (');
+        DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'STH_'  || reg_summary_history.CONCEPT_NAME || ' (');
         FOR indx IN lista_pk.FIRST .. lista_pk.LAST
         LOOP
           IF indx = lista_pk.LAST THEN
@@ -590,7 +590,7 @@ BEGIN
         if (lista_pk.COUNT = 0 and lista_par.COUNT>0) then
           /* Tenemos el caso de que la tabla no tiene PK pero si esta particionada */
           /* Segun los requerimientos de MySQL podemos crear un indice por los campos del particionado */
-          DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME || ' (');
+          DBMS_OUTPUT.put_line('CREATE INDEX ON ' || OWNER_SA || '.' || 'STH_' || reg_summary_history.CONCEPT_NAME || ' (');
           FOR indy IN lista_par.FIRST .. lista_par.LAST
           LOOP
               IF indy = lista_par.LAST THEN

@@ -34,16 +34,17 @@ SELECT
     --, 'DWF_TRAFV_TA', 'DWF_TRAFE_TA'
     --, 'DWF_TRAFD_TA'
     --'DWF_TRANSAC_SUBSCRIBER'
-      'DWF_CSTMR_INV_DTL', 'DWF_CSTMR_INV', 'DWF_CSTMR_PNDG_DOC', 'DWF_CSTMR_COLLECT'
-      , 'CSTMR_INV_DTL_FCT', 'CSTMR_INV_FCT'
-      , 'CSTMR_PNDG_DOC_FCT'
-      , 'CSTMR_DOC_FCT'
-      , 'HH_TRCKNG_FCT'
-      , 'HH_MVMT_FCT'
-      , 'DWF_PRVN_SVC_TRCKNG'
-      , 'PRVN_SVC_TRCKNG_FCT'
-      , 'PRVN_SVC_TRCKNG_FCT'
-      , 'DWF_CSTMR_DOC'
+      --'DWF_CSTMR_INV_DTL', 'DWF_CSTMR_INV', 'DWF_CSTMR_PNDG_DOC', 'DWF_CSTMR_COLLECT'
+      --, 'CSTMR_INV_DTL_FCT', 'CSTMR_INV_FCT'
+      --, 'CSTMR_PNDG_DOC_FCT'
+      --, 'CSTMR_DOC_FCT'
+      --, 'HH_TRCKNG_FCT'
+      --, 'HH_MVMT_FCT'
+      --, 'DWF_PRVN_SVC_TRCKNG'
+      --, 'PRVN_SVC_TRCKNG_FCT'
+      --, 'PRVN_SVC_TRCKNG_FCT'
+      --, 'DWF_CSTMR_DOC'
+      'TRN_PDUSG_MVMT_SUBS_FCT' -- Generada
     );
     
   cursor MTDT_SCENARIO (table_name_in IN VARCHAR2)

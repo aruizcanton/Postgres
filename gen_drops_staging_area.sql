@@ -89,7 +89,7 @@ BEGIN
     FETCH dtd_interfaz_summary
       INTO reg_summary;
       EXIT WHEN dtd_interfaz_summary%NOTFOUND;  
-      DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_SA || '.' || 'SA_' || reg_summary.CONCEPT_NAME || ' CASCADE;');
+      DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_SA || '.' || 'STG_' || reg_summary.CONCEPT_NAME || ' CASCADE;');
   END LOOP;
   CLOSE dtd_interfaz_summary;
   /****************************************************************/
@@ -101,7 +101,7 @@ BEGIN
     FETCH dtd_interfaz_summary_history
       INTO reg_summary_history;
       EXIT WHEN dtd_interfaz_summary_history%NOTFOUND;  
-      DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_SA || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME || ' CASCADE;');      
+      DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_SA || '.' || 'STH_' || reg_summary_history.CONCEPT_NAME || ' CASCADE;');      
   END LOOP;
   CLOSE dtd_interfaz_summary_history;
 END;

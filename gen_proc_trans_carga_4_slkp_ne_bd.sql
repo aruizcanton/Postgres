@@ -3100,7 +3100,7 @@ begin
         lista_variables_rownumber.delete;
         
         UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_TC || '.' || reg_scenario.SCENARIO || '_' || nombre_proceso || ';');
-        UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_TC || '.' || reg_scenario.SCENARIO || '_' || nombre_proceso || ' (fch_datos_in text)');
+        UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_TC || '.fnc_' || reg_scenario.SCENARIO || '_' || nombre_proceso || ' (fch_carga_in varchar(8), fch_datos_in varchar(8))');
         UTL_FILE.put_line(fich_salida_pkg, 'returns integer AS $$');
         UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
         UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INTEGER := 0;');
@@ -3213,8 +3213,8 @@ begin
         lista_variables_rownumber.delete;
         UTL_FILE.put_line(fich_salida_pkg, '');
         --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE IMMEDIATE ''INSERT');
-        UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_TC || '.' || reg_scenario.SCENARIO || '_' || nombre_proceso || ';');
-        UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_TC || '.' || reg_scenario.SCENARIO || '_' || nombre_proceso || ' (fch_datos_in text)');
+        UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_TC || '.fnc_' || reg_scenario.SCENARIO || '_' || nombre_proceso || ';');
+        UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_TC || '.fnc_' || reg_scenario.SCENARIO || '_' || nombre_proceso || ' (fch_carga_in varchar(8), fch_datos_in varchar(8))');
         UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');
         UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
         UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INT := 0;');
@@ -3327,8 +3327,8 @@ begin
 
 /*/////////////////////////////////// */
 
-    UTL_FILE.put_line(fich_salida_pkg, 'DROP PROCEDURE IF EXISTS ' || OWNER_TC || '.lh_' || nombre_proceso || ';');
-    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_TC || '.lh_' || nombre_proceso || ' (IN fch_datos_in text, IN forzado_in text)');
+    UTL_FILE.put_line(fich_salida_pkg, 'DROP PROCEDURE IF EXISTS ' || OWNER_TC || '.prc_' || nombre_proceso || ';');
+    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_TC || '.prc_' || nombre_proceso || ' (IN fch_datos_in varchar(8), IN forzado_in varchar(8))');
     UTL_FILE.put_line(fich_salida_pkg, 'LANGUAGE plpgsql');
     UTL_FILE.put_line(fich_salida_pkg, 'AS $$');
     UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
@@ -3347,10 +3347,11 @@ begin
     --UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_updt = 0;');
     --UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_hist = 0;');
     --UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_read = 0;');
-    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Inicio del proceso de carga: ' || OWNER_TC || '.neh_' || nombre_proceso || ''';');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Inicio del proceso de carga: ' || OWNER_TC || '.prc_' || nombre_proceso || ''';');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El valor del parámetro fch_carga_in es: %.'', fch_carga_in;');
     UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El valor del parámetro fch_datos_in es: %.'', fch_datos_in;');
     UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El valor del parámetro forzado_in es: %.'', forzado_in;');
-    UTL_FILE.put_line(fich_salida_pkg, '  CALL ' || OWNER_TC || '.siguiente_paso(''' || nombre_fich_carga || ''', to_date(fch_datos_in, ''YYYYMMDD''), siguiente_paso_a_ejecutar);');
+    UTL_FILE.put_line(fich_salida_pkg, '  CALL ' || OWNER_TC || '.prc_comun_siguiente_paso(''' || nombre_fich_carga || ''', to_date(fch_carga_in, ''YYYYMMDD''), to_date(fch_datos_in, ''YYYYMMDD''), siguiente_paso_a_ejecutar);');
     UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Después de la llamada a siguiente_paso. El valor siguiente_paso_a_ejecutar es: %: '', siguiente_paso_a_ejecutar;');
 
     UTL_FILE.put_line(fich_salida_pkg, '  if (forzado_in = ''F'') then');
@@ -3436,13 +3437,13 @@ begin
     
     FOR indx IN lista_scenarios_presentes.FIRST .. lista_scenarios_presentes.LAST
     LOOP
-      UTL_FILE.put_line(fich_salida_pkg, '    numero_reg_' || lista_scenarios_presentes(indx) || ' := numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_TC || '.' || lista_scenarios_presentes(indx) || '_' || nombre_proceso || ' (fch_datos_in);');
+      UTL_FILE.put_line(fich_salida_pkg, '    numero_reg_' || lista_scenarios_presentes(indx) || ' := numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_TC || '.fnc_' || lista_scenarios_presentes(indx) || '_' || nombre_proceso || ' (fch_carga_in, fch_datos_in);');
       UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es: %.'', numero_reg_' || lista_scenarios_presentes(indx) || ';');
       UTL_FILE.put_line(fich_salida_pkg, '    numero_reg_new := numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';' );
       UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El numero de registros nuevos acumulados es: %'', numero_reg_new;');
     END LOOP;
     UTL_FILE.put_line(fich_salida_pkg, '    /* Este tipo de procesos solo tienen un paso, y ha terminado OK por eso aparece un 0 en el siguiente campo */');
-    UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.inserta_monitoreo (''' || nombre_fich_carga || ''', 1, 0, numero_reg_new, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
+    UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.prc_comun_inserta_monitoreo (''' || nombre_fich_carga || ''', 1, 0, numero_reg_new, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');
     --UTL_FILE.put_line(fich_salida_pkg, '    commit;');
     UTL_FILE.put_line(fich_salida_pkg, '  else');
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El procedimiento ' || nombre_fich_carga || ' ya se ha ejecutado previamente de manera exitosa.'';');
@@ -3451,15 +3452,15 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, 'EXCEPTION');
     UTL_FILE.put_line(fich_salida_pkg, '    WHEN OTHERS THEN');
     UTL_FILE.put_line(fich_salida_pkg, '        GET STACKED DIAGNOSTICS errno := RETURNED_SQLSTATE, msg := MESSAGE_TEXT;');
-    UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''Error al realizar la transformación en el procedimiento: %.'', ' || OWNER_TC || '.neh_' || nombre_proceso || ';');
+    UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''Error al realizar la transformación en el procedimiento: %.'', ' || OWNER_TC || '.prc_' || nombre_proceso || ';');
     UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''Error code: %. Mensaje: %'', errno, msg;');
-    UTL_FILE.put_line(fich_salida_pkg, '        CALL ' || OWNER_TC || '.inserta_monitoreo (''' || nombre_fich_carga || ''', 1, 1, 0, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');      
+    UTL_FILE.put_line(fich_salida_pkg, '        CALL ' || OWNER_TC || '.prc_comun_inserta_monitoreo (''' || nombre_fich_carga || ''', 1, 1, 0, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');      
     UTL_FILE.put_line(fich_salida_pkg, '        RAISE; -- Reraises the caught exception');
     UTL_FILE.put_line(fich_salida_pkg, 'END;');
     UTL_FILE.put_line(fich_salida_pkg, '$$;');
 
-    UTL_FILE.put_line(fich_salida_pkg, 'DROP PROCEDURE IF EXISTS ' || OWNER_TC || '.lex_' || nombre_proceso || ';');
-    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_DM || '.lex_' || nombre_proceso || ' (IN fch_datos_in text, IN forzado_in text)');
+    UTL_FILE.put_line(fich_salida_pkg, 'DROP PROCEDURE IF EXISTS ' || OWNER_TC || '.prc_ex_' || nombre_proceso || ';');
+    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_DM || '.prc_ex_' || nombre_proceso || ' (IN fch_datos_in varchar(8), IN fch_datos_in varchar(8), IN forzado_in text)');
     UTL_FILE.put_line(fich_salida_pkg, 'LANGUAGE plpgsql');
     UTL_FILE.put_line(fich_salida_pkg, 'AS $$');
     UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
@@ -3472,12 +3473,13 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '  msg TEXT;');
     UTL_FILE.put_line(fich_salida_pkg, '  errno INT;');
     UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
-    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Inicio del proceso de EXCHANGE: ' || OWNER_TC || '.lex_' || nombre_proceso || ''';');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Inicio del proceso de EXCHANGE: ' || OWNER_TC || '.prc_ex_' || nombre_proceso || ''';');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El parámetro fch_carga_in es: %'', fch_carga_in;');
     UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El parámetro fch_datos_in es: %'', fch_datos_in;');
     UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El parámetro forzado_in es: %'', forzado_in;');
     /* (20191011) Angel Ruiz. BUG*/    
     --UTL_FILE.put_line(fich_salida_pkg, '  CALL COMBI.siguiente_paso(''' || nombre_fich_exchange || ''', STR_TO_DATE(fch_datos_in, ''%Y%m%d''), STR_TO_DATE(fch_carga_in, ''%Y%m%d''), siguiente_paso_a_ejecutar);');
-    UTL_FILE.put_line(fich_salida_pkg, '  CALL ' || OWNER_TC || '.siguiente_paso(''' || nombre_fich_exchange || ''', to_date(fch_datos_in, ''YYYYMMDD''), siguiente_paso_a_ejecutar);');
+    UTL_FILE.put_line(fich_salida_pkg, '  CALL ' || OWNER_TC || '.prc_comun_siguiente_paso(''' || nombre_fich_exchange || ''', to_date(fch_carga_in, ''YYYYMMDD''), to_date(fch_datos_in, ''YYYYMMDD''), siguiente_paso_a_ejecutar);');
     UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Después de la llamada a siguiente_paso. El valor siguiente_paso_a_ejecutar es: %: '', siguiente_paso_a_ejecutar;');
     /* (20191011) Angel Ruiz. FIN */
     UTL_FILE.put_line(fich_salida_pkg, '  if (forzado_in = ''F'') then');
@@ -3515,7 +3517,7 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '   RAISE NOTICE ''Después del attach'';');
     end if;
     UTL_FILE.put_line(fich_salida_pkg, '');
-    UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', 1, 0, num_reg, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
+    UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.prc_comun_inserta_monitoreo (''' || nombre_fich_exchange || ''', 1, 0, num_reg, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El primer y único paso ha terminado correctamente.'';');
     UTL_FILE.put_line(fich_salida_pkg, '    --commit;');
     UTL_FILE.put_line(fich_salida_pkg, '  else');
@@ -3527,7 +3529,7 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '        GET STACKED DIAGNOSTICS errno := RETURNED_SQLSTATE, msg := MESSAGE_TEXT;');
     UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''Error al realizar la tgransformación en el procedimiento: %.'', ' || OWNER_DM || '.lex_' || nombre_proceso || ';');
     UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''Error code: %. Mensaje: %'', errno, msg;');
-    UTL_FILE.put_line(fich_salida_pkg, '        CALL ' || OWNER_DM || '.inserta_monitoreo (''' || nombre_fich_carga || ''', siguiente_paso_a_ejecutar, 1, 0, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');      
+    UTL_FILE.put_line(fich_salida_pkg, '        CALL ' || OWNER_DM || '.prc_comun_inserta_monitoreo (''' || nombre_fich_carga || ''', siguiente_paso_a_ejecutar, 1, 0, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');      
     UTL_FILE.put_line(fich_salida_pkg, '        RAISE; -- Reraises the caught exception');
     UTL_FILE.put_line(fich_salida_pkg, 'END;');
     UTL_FILE.put_line(fich_salida_pkg, '$$;');
@@ -3602,20 +3604,21 @@ begin
     UTL_FILE.put_line(fich_salida_load, '# shellcheck disable=SC1091');
     UTL_FILE.put_line(fich_salida_load, '. "${HOME_PRODUCCION}"/' || NAME_DM || '/COMUN/Shell/Entorno/Entorno' || NAME_DM || '_' || PAIS || '.sh');
     UTL_FILE.put_line(fich_salida_load, '# Comprobamos si el numero de parametros es el correcto');
-    UTL_FILE.put_line(fich_salida_load, 'if [ $# -ne 2 ] ; then');
-    UTL_FILE.put_line(fich_salida_load, '  SUBJECT="Numero de paramatros de entrada incorrecto. Uso: ${0} <fch_datos> <forzado>"');
+    UTL_FILE.put_line(fich_salida_load, 'if [ $# -ne 3 ] ; then');
+    UTL_FILE.put_line(fich_salida_load, '  SUBJECT="Numero de paramatros de entrada incorrecto. Uso: ${0} <fch_carga> <fch_datos> <forzado>"');
     UTL_FILE.put_line(fich_salida_load, '  echo "${SUBJECT}"');        
     UTL_FILE.put_line(fich_salida_load, '  exit 1');
     UTL_FILE.put_line(fich_salida_load, 'fi');
     UTL_FILE.put_line(fich_salida_load, '# Recogida de parametros');
-    UTL_FILE.put_line(fich_salida_load, 'FCH_DATOS=${1}');
-    UTL_FILE.put_line(fich_salida_load, 'BAN_FORZADO=${2}');
+    UTL_FILE.put_line(fich_salida_load, 'FCH_CARGA=${1}');    
+    UTL_FILE.put_line(fich_salida_load, 'FCH_DATOS=${2}');
+    UTL_FILE.put_line(fich_salida_load, 'BAN_FORZADO=${3}');
     UTL_FILE.put_line(fich_salida_load, 'FECHA_HORA=${FCH_DATOS}_$(date +%Y%m%d_%H%M%S)');      
     UTL_FILE.put_line(fich_salida_load, '# Comprobamos si existe el directorio de Trazas para fecha de carga');
-    UTL_FILE.put_line(fich_salida_load, 'if [ ! -d "${' || NAME_DM || '_TRAZAS}/${FCH_DATOS}" ] ; then');
-    UTL_FILE.put_line(fich_salida_load, '  mkdir "${' || NAME_DM || '_TRAZAS}/${FCH_DATOS}"');
+    UTL_FILE.put_line(fich_salida_load, 'if [ ! -d "${' || NAME_DM || '_TRAZAS}/${FCH_CARGA}" ] ; then');
+    UTL_FILE.put_line(fich_salida_load, '  mkdir "${' || NAME_DM || '_TRAZAS}/${FCH_CARGA}"');
     UTL_FILE.put_line(fich_salida_load, 'fi');
-    UTL_FILE.put_line(fich_salida_load, NAME_DM || '_TRAZAS=${' || NAME_DM || '_TRAZAS}/${FCH_DATOS}');
+    UTL_FILE.put_line(fich_salida_load, NAME_DM || '_TRAZAS=${' || NAME_DM || '_TRAZAS}/${FCH_CARGA}');
     UTL_FILE.put_line(fich_salida_load, 'echo "${0}" > "${' || NAME_DM || '_TRAZAS}"/load_he_' || nombre_proceso || '_"${FECHA_HORA}"' || '.log ');
     UTL_FILE.put_line(fich_salida_load, '# shellcheck disable=SC2129');
     UTL_FILE.put_line(fich_salida_load, 'echo "Inicia Proceso: $(date +%d/%m/%Y\ %H:%M:%S)"  >> "${' || NAME_DM || '_TRAZAS}"/load_he_' || nombre_proceso || '_"${FECHA_HORA}"' || '.log ');
@@ -3653,11 +3656,11 @@ begin
     UTL_FILE.put_line(fich_salida_load, 'fi');
     UTL_FILE.put_line(fich_salida_load, '');
     UTL_FILE.put_line(fich_salida_load, '# Llamada a PostgreSQL');
-    UTL_FILE.put_line(fich_salida_load, 'psql -h "$HOST" -p "$PORT" -U "$BD_USUARIO" -d "$DB_NAME" -c "call ' || OWNER_TC || '.lh_' || nombre_proceso || ' (''${FCH_DATOS}'', ''${BAN_FORZADO}'');" >> "${' || NAME_DM || '_TRAZAS}/load_he_' || nombre_proceso || '_${FECHA_HORA}"' || '.log ' ||  '2>&' || '1');
+    UTL_FILE.put_line(fich_salida_load, 'psql -h "$HOST" -p "$PORT" -U "$BD_USUARIO" -d "$DB_NAME" -c "call ' || OWNER_TC || '.prc_' || nombre_proceso || ' (''${FCH_DATOS}'', ''${BAN_FORZADO}'');" >> "${' || NAME_DM || '_TRAZAS}/load_he_' || nombre_proceso || '_${FECHA_HORA}"' || '.log ' ||  '2>&' || '1');
     UTL_FILE.put_line(fich_salida_load, '');
     UTL_FILE.put_line(fich_salida_load, 'err_salida=$?');
     UTL_FILE.put_line(fich_salida_load, 'if [ ${err_salida} -ne 0 ]; then');
-    UTL_FILE.put_line(fich_salida_load, '  SUBJECT="${INTERFAZ}: Surgio un error en el postgres en la llamada a neh_' || nombre_proceso || '. Error:  ${err_salida}."');
+    UTL_FILE.put_line(fich_salida_load, '  SUBJECT="${INTERFAZ}: Surgio un error en el postgres en la llamada a prc_' || nombre_proceso || '. Error:  ${err_salida}."');
     UTL_FILE.put_line(fich_salida_load, '  ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
     UTL_FILE.put_line(fich_salida_load, '  echo "${SUBJECT}" >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_he' || '_' || nombre_proceso || '_${FECHA_HORA}".log');
     UTL_FILE.put_line(fich_salida_load, '# shellcheck disable=SC2005');
@@ -3745,20 +3748,21 @@ begin
     UTL_FILE.put_line(fich_salida_exchange, '# shellcheck disable=SC1091');
     UTL_FILE.put_line(fich_salida_exchange, '. "${HOME_PRODUCCION}"/' || NAME_DM || '/COMUN/Shell/Entorno/Entorno' || NAME_DM || '_' || PAIS || '.sh');
     UTL_FILE.put_line(fich_salida_exchange, '# Comprobamos si el numero de parametros es el correcto');
-    UTL_FILE.put_line(fich_salida_exchange, 'if [ $# -ne 2 ] ; then');
-    UTL_FILE.put_line(fich_salida_exchange, '  SUBJECT="Numero de paramatros de entrada incorrecto. Uso: ${0} <fch_datos> <forzado>"');
+    UTL_FILE.put_line(fich_salida_exchange, 'if [ $# -ne 3 ] ; then');
+    UTL_FILE.put_line(fich_salida_exchange, '  SUBJECT="Numero de paramatros de entrada incorrecto. Uso: ${0} <fch_carga> <fch_datos> <forzado>"');
     UTL_FILE.put_line(fich_salida_exchange, '  echo "${SUBJECT}"');        
     UTL_FILE.put_line(fich_salida_exchange, '  exit 1');
     UTL_FILE.put_line(fich_salida_exchange, 'fi');
     UTL_FILE.put_line(fich_salida_exchange, '# Recogida de parametros');
-    UTL_FILE.put_line(fich_salida_exchange, 'FCH_DATOS=${1}');
+    UTL_FILE.put_line(fich_salida_exchange, 'FCH_CARGA=${1}');
+    UTL_FILE.put_line(fich_salida_exchange, 'FCH_DATOS=${2}');
     UTL_FILE.put_line(fich_salida_exchange, 'BAN_FORZADO=${2}');
     UTL_FILE.put_line(fich_salida_exchange, 'FECHA_HORA=${FCH_DATOS}_$(date +%Y%m%d_%H%M%S)');
     UTL_FILE.put_line(fich_salida_exchange, '# Comprobamos si existe el directorio de Trazas para fecha de carga');
-    UTL_FILE.put_line(fich_salida_exchange, 'if [ ! -d "${' || NAME_DM || '_TRAZAS}/${FCH_DATOS}" ] ; then');
-    UTL_FILE.put_line(fich_salida_exchange, '  mkdir "${' || NAME_DM || '_TRAZAS}/${FCH_DATOS}"');
+    UTL_FILE.put_line(fich_salida_exchange, 'if [ ! -d "${' || NAME_DM || '_TRAZAS}/${FCH_CARGA}" ] ; then');
+    UTL_FILE.put_line(fich_salida_exchange, '  mkdir "${' || NAME_DM || '_TRAZAS}/${FCH_CARGA}"');
     UTL_FILE.put_line(fich_salida_exchange, 'fi');
-    UTL_FILE.put_line(fich_salida_exchange, NAME_DM || '_TRAZAS="${' || NAME_DM || '_TRAZAS}/${FCH_DATOS}"');
+    UTL_FILE.put_line(fich_salida_exchange, NAME_DM || '_TRAZAS="${' || NAME_DM || '_TRAZAS}/${FCH_CARGA}"');
     UTL_FILE.put_line(fich_salida_exchange, 'echo "${0}" > ${' || NAME_DM || '_TRAZAS}/load_ex_' || nombre_proceso || '_${FECHA_HORA}' || '.log ');
     UTL_FILE.put_line(fich_salida_exchange, '# shellcheck disable=SC2129');
     UTL_FILE.put_line(fich_salida_exchange, 'echo "Inicia Proceso: $(date +%d/%m/%Y\ %H:%M:%S)" >> "${' || NAME_DM || '_TRAZAS}/load_ex_' || nombre_proceso || '_${FECHA_HORA}"' || '.log');
@@ -3795,11 +3799,11 @@ begin
     UTL_FILE.put_line(fich_salida_exchange, '  TELEFONOS_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TELEFONOS_USUARIOS.txt)');
     UTL_FILE.put_line(fich_salida_exchange, 'fi');
     UTL_FILE.put_line(fich_salida_exchange, '');
-    UTL_FILE.put_line(fich_salida_exchange, 'psql -h "$HOST" -p "$PORT" -U "$BD_USUARIO" -d "$DB_NAME" -c " call ' || OWNER_TC || '.lex_' || nombre_proceso || ' (''${FCH_DATOS}'', ''${BAN_FORZADO}'');" >> "${' || NAME_DM || '_TRAZAS}/load_ex_' || nombre_proceso || '_${FECHA_HORA}"' || '.log ' ||  '2>&' || '1');
+    UTL_FILE.put_line(fich_salida_exchange, 'psql -h "$HOST" -p "$PORT" -U "$BD_USUARIO" -d "$DB_NAME" -c " call ' || OWNER_TC || '.prc_ex_' || nombre_proceso || ' (''${FCH_DATOS}'', ''${BAN_FORZADO}'');" >> "${' || NAME_DM || '_TRAZAS}/load_ex_' || nombre_proceso || '_${FECHA_HORA}"' || '.log ' ||  '2>&' || '1');
     UTL_FILE.put_line(fich_salida_exchange, '');
     UTL_FILE.put_line(fich_salida_exchange, 'err_salida=$?');
     UTL_FILE.put_line(fich_salida_exchange, 'if [ ${err_salida} -ne 0 ]; then');
-    UTL_FILE.put_line(fich_salida_exchange, '  SUBJECT="${INTERFAZ}: Surgio un error en el sqlplus en la llamada a pre_' || nombre_proceso || '. Error:  ${err_salida}."');
+    UTL_FILE.put_line(fich_salida_exchange, '  SUBJECT="${INTERFAZ}: Surgio un error en el sqlplus en la llamada a prc_ex_' || nombre_proceso || '. Error:  ${err_salida}."');
     UTL_FILE.put_line(fich_salida_exchange, '  ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
     UTL_FILE.put_line(fich_salida_exchange, '  echo "${SUBJECT}" >> ' || '"${' || NAME_DM || '_TRAZAS}"/' || 'load_ex' || '_' || nombre_proceso || '"_${FECHA_HORA}".log');
     UTL_FILE.put_line(fich_salida_exchange, '  # shellcheck disable=SC2005');

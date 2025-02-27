@@ -78,7 +78,7 @@ BEGIN
         --nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')+1); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
         nombre_tabla_reducido := r_mtdt_modelo_logico_TABLA.TABLE_NAME; /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
 
-        DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' CASCADE;');
+        DBMS_OUTPUT.put_line('GRANT ALL ON ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' TO ' || OWNER_DM || ';');
         --DBMS_OUTPUT.put_line('');
         /***************************/
         

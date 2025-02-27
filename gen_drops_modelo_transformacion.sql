@@ -6,8 +6,36 @@ DECLARE
         TRIM(TABLESPACE) "TABLESPACE",
         TRIM(CI) "CI"
         FROM MTDT_MODELO_SUMMARY
-        WHERE TRIM(CI) <> 'P'   /* Las que poseen un valor "P" en esta columna son las tablas de PERMITED_VALUES, por lo que no hya que generar su modelo */
-        and SUBSTR(TRIM(TABLE_NAME), 1, 4) <> 'TRN_'  /* Las tablas de transformación no se generan */
+        WHERE TRIM(CI) <> 'P' and   /* Las que poseen un valor "P" en esta columna son las tablas de PERMITED_VALUES, por lo que no hya que generar su modelo */
+        SUBSTR(TRIM(TABLE_NAME), 1, 4) = 'TRN_'  /* Las tablas de transformación no se generan */
+        and trim(TABLE_NAME) in (   /* (20250224)SP1*/
+          'TRN_PDUSG_SUBSCRIBER_DIM'
+          ,'TRN_PDUSG_ACCOUNT_DIM'
+          ,'TRN_SALES_CNL_DIM'
+          ,'TRN_CSTMR_DVC_DIM'
+          ,'TRN_SALES_EMPE_DIM'
+          ,'TRN_REFER_GEO_AREA_DIM'
+          ,'TRN_SALES_ROLE_DIM'
+          ,'TRN_INSEC_SRC_STM_DIM'
+          ,'TRN_PDSVC_SVC_DIM'
+          ,'TRN_CSTMR_CSTMR_DIM'
+          ,'TRN_PDUSG_PYMT_ENT_DIM'
+          ,'TRN_CSTMR_CSTMR_CLSS_DIM'
+          ,'TRN_CSTMR_CSTMR_GRP_DIM'
+          ,'TRN_CSTMR_CSTMR_HLDG_DIM'
+          ,'TRN_CSTMR_IP_DIM'
+          ,'TRN_INSEC_SRC_OBJ_DIM'
+          ,'TRN_CSTMR_AR_CTC_PRFL_DIM'
+          ,'TRN_PDSVC_BANTRN_PDSVCTH_DIM'
+          ,'TRN_PDUSG_COLL_PYMT_MTH_DIM'
+          ,'TRN_NTWRK_NTW_CMPT_DIM'
+          ,'TRN_FINAN_ORG_DIM'
+          ,'TRN_PDSVC_PD_DIM'
+          ,'TRN_PDSVC_PD_OFRG_DIM'
+          ,'TRN_SALES_RTLR_DIM'
+          ,'TRN_INSEC_BTCH_DIM'
+          ,'TRN_PDUSG_MVMT_SUBS_FCT'
+        )
         ;
     
     CURSOR c_mtdt_modelo_logico_COLUMNA (table_name_in IN VARCHAR2)
@@ -44,8 +72,7 @@ DECLARE
     OWNER_SA                             VARCHAR2(60);
     OWNER_T                                VARCHAR2(60);
     OWNER_DM                            VARCHAR2(60);
-    OWNER_DWH                           VARCHAR2(60);
-    OWNER_MTDT                          VARCHAR2(60);
+    OWNER_MTDT                       VARCHAR2(60);
     TABLESPACE_DIM                VARCHAR2(60);
     NAME_DM                            VARCHAR(60);  
   
@@ -56,7 +83,6 @@ BEGIN
     SELECT VALOR INTO OWNER_SA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_SA';
     SELECT VALOR INTO OWNER_T FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_T';
     SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM';
-    SELECT VALOR INTO OWNER_DWH FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DWH';
     SELECT VALOR INTO OWNER_MTDT FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_MTDT';
     SELECT VALOR INTO TABLESPACE_DIM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_DIM';
     SELECT VALOR INTO NAME_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'NAME_DM';  
@@ -78,9 +104,15 @@ BEGIN
         --nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')+1); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
         nombre_tabla_reducido := r_mtdt_modelo_logico_TABLA.TABLE_NAME; /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
 
-        DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' CASCADE;');
+        DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' CASCADE;');
         --DBMS_OUTPUT.put_line('');
         /***************************/
+        /* Ahora creamos la tabla TEMPORAL pero solo para aquellas que no se van a cargar como carga inicial */
+        if (r_mtdt_modelo_logico_TABLA.CI = 'N' or r_mtdt_modelo_logico_TABLA.CI = 'F' or r_mtdt_modelo_logico_TABLA.CI = 'I') then
+            /* Aquellas que no tienen ningún tipo de carga inicial */
+            DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || OWNER_DM || '.' || nombre_tabla_reducido || '_T' || ' CASCADE;');
+        end if;      
+        --DBMS_OUTPUT.put_line('');
         
         END LOOP;
         CLOSE c_mtdt_modelo_logico_TABLA;

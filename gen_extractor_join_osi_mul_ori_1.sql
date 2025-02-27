@@ -2499,7 +2499,9 @@ begin
       /* hay que calcular la longitud de la linea antes de nada */
       v_type := 'N';
       select TYPE into v_type from MTDT_INTERFACE_SUMMARY where trim(CONCEPT_NAME) = trim(reg_tabla.TABLE_NAME);
-      if (v_type = 'P') then
+      if (v_type = 'P' or v_type = 'S') then
+        /* (20250113) ANGEL RUIZ. Lo pongo porque veo conveniente poner la longitud máxima de la línea */
+        /* aunque no sea de ancho fijo */
         /* Se trata de un fichero que se ha de extraer por posicion */
         --select sum(length) into v_line_size from MTDT_INTERFACE_DETAIL where trim(CONCEPT_NAME) = reg_tabla.TABLE_NAME;
         select 
@@ -2526,7 +2528,9 @@ begin
         /* Solo ponemos la cabecera del fichero SQL si no se trata del tipo que va directamente a tablas de Staging sin */
         /* pasar por fichero plano, tipo de validacion I */
         
-        if (v_type = 'P') then
+        if (v_type = 'P' or v_type = 'S') then
+        /* (20250113) ANGEL RUIZ. Lo pongo porque veo conveniente poner la longitud máxima de la línea */
+        /* aunque no sea de ancho fijo */
         /* Si se trata de un interfaz a fichero plano */
           UTL_FILE.put_line (fich_salida_pkg,'SET LINESIZE ' || v_line_size || ';');
           if (v_line_size > 4000) then
@@ -2543,9 +2547,9 @@ begin
         UTL_FILE.put_line (fich_salida_pkg,'SET HEADING OFF;');
         UTL_FILE.put_line (fich_salida_pkg,'SET DOC OFF;');
         UTL_FILE.put_line (fich_salida_pkg,'SET ECHO OFF;');
-        UTL_FILE.put_line (fich_salida_pkg,'SET TRIMSPOOL OFF;');
+        UTL_FILE.put_line (fich_salida_pkg,'SET TRIMSPOOL ON;');
         UTL_FILE.put_line (fich_salida_pkg,'SET TERM OFF;');
-        UTL_FILE.put_line (fich_salida_pkg,'SET TRIMS OFF;');
+        UTL_FILE.put_line (fich_salida_pkg,'SET TRIMS ON;');
         UTL_FILE.put_line (fich_salida_pkg,'SET ARRAYSIZE 2500;');
         UTL_FILE.put_line (fich_salida_pkg,'');
         UTL_FILE.put_line (fich_salida_pkg,'SPOOL &' || '1');
@@ -3293,7 +3297,7 @@ begin
 
     UTL_FILE.put_line(fich_salida_load, 'InsertaFinFallido()');
     UTL_FILE.put_line(fich_salida_load, '{');
-    UTL_FILE.put_line(fich_salida_load, '    insert_record_monitoreo ' || nombre_proceso || '.sh 1 1 0 0 0 0 0 "${FCH_DATOS}" "${INICIO_PASO_TMR}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
+    UTL_FILE.put_line(fich_salida_load, '    insert_record_monitoreo ' || nombre_proceso || '.sh 1 1 0 0 0 0 0 "${FCH_DATOS}" "${FCH_DATOS}" "${INICIO_PASO_TMR}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
     UTL_FILE.put_line(fich_salida_load, '    rc=$?');
     UTL_FILE.put_line(fich_salida_load, '    if [ $rc -ne 0 ]');
     UTL_FILE.put_line(fich_salida_load, '    then');
@@ -3307,7 +3311,7 @@ begin
     UTL_FILE.put_line(fich_salida_load, '');
     UTL_FILE.put_line(fich_salida_load, 'InsertaFinOK()');
     UTL_FILE.put_line(fich_salida_load, '{');
-    UTL_FILE.put_line(fich_salida_load, '    insert_record_monitoreo ' || nombre_proceso || '.sh 1 0 "${B_CONTEO_BD}" 0 0 "${CONTEO_ARCHIVO}" 0 "${FCH_DATOS}" "${INICIO_PASO_TMR}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>&' || '1');
+    UTL_FILE.put_line(fich_salida_load, '    insert_record_monitoreo ' || nombre_proceso || '.sh 1 0 "${B_CONTEO_BD}" 0 0 "${CONTEO_ARCHIVO}" 0 "${FCH_DATOS}" "${FCH_DATOS}" "${INICIO_PASO_TMR}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>&' || '1');
     UTL_FILE.put_line(fich_salida_load, '    rc=$?');
     UTL_FILE.put_line(fich_salida_load, '    if [ $rc -ne 0 ]');
     UTL_FILE.put_line(fich_salida_load, '    then');
@@ -4082,9 +4086,9 @@ begin
       UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET HEADING OFF;');
       UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET DOC OFF;');
       UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET ECHO OFF;');
-      UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET TRIMSPOOL OFF;');
+      UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET TRIMSPOOL ON;');
       UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET TERM OFF;');
-      UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET TRIMS OFF;');
+      UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET TRIMS ON;');
       UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SET ARRAYSIZE 2500;');
       UTL_FILE.put_line (fich_salida_pkg_desde_stage,'');
       UTL_FILE.put_line (fich_salida_pkg_desde_stage,'SPOOL &' || '1');

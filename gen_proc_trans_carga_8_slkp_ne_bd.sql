@@ -3147,7 +3147,7 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, 'returns integer AS $$');
         UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
         UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INTEGER := 0;');
-        UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+        UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
         UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
         UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
         UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
@@ -3273,7 +3273,7 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');
         UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
         UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INT := 0;');
-        UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+        UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
         UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
         UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
         UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
@@ -3404,11 +3404,12 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '  numero_reg_' || lista_scenarios_presentes(indx) || ' int := 0;');
     END LOOP;
     UTL_FILE.put_line(fich_salida_pkg, '  siguiente_paso_a_ejecutar int;');
-    UTL_FILE.put_line(fich_salida_pkg, '  inicio_paso_tmr TIMESTAMP := clock_timestamp();');
+    UTL_FILE.put_line(fich_salida_pkg, '  inicio_paso_tmr TIMESTAMP := current_timestamp;');
     UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos text;');
     UTL_FILE.put_line(fich_salida_pkg, '  v_fch_particion text;');
     UTL_FILE.put_line(fich_salida_pkg, '  msg TEXT;');
     UTL_FILE.put_line(fich_salida_pkg, '  errno TEXT;');
+    UTL_FILE.put_line(fich_salida_pkg, '  sql TEXT;');
     UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
     --UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_updt = 0;');
     --UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_hist = 0;');
@@ -3426,7 +3427,7 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '    siguiente_paso_a_ejecutar := 1;');
     UTL_FILE.put_line(fich_salida_pkg, '  end if;');
     UTL_FILE.put_line(fich_salida_pkg, '  if (siguiente_paso_a_ejecutar = 1) then');
-    UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := clock_timestamp();');
+    UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := current_timestamp;');
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor del timestamp de inicio de paso es: %.'', inicio_paso_tmr;');    
     --UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
     --UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_TC || '.T_' || nombre_tabla_reducido || ';');
@@ -3606,6 +3607,10 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del drop constraint'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Ejecutando truncate_local_data_after_distributing_table...'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_TC) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
+        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después de ejecutar: %'', sql;');
       else
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
@@ -3613,6 +3618,9 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del drop constraint'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
+        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después de ejecutar: %'', sql;');
       end if;
       /* (20250320). Angel Ruiz . -f */
     end if;

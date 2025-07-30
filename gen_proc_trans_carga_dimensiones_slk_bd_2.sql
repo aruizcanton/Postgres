@@ -3172,7 +3172,7 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
           UTL_FILE.put_line(fich_salida_pkg, '');
           UTL_FILE.put_line(fich_salida_pkg,'  INSERT');
-          UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || OWNER_DM || '.T_' || NOMBRE_PROCESO);
+          UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || OWNER_DM || '.' || NOMBRE_PROCESO || '_T');
           UTL_FILE.put_line(fich_salida_pkg,'  (');
           open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
           primera_col := 1;
@@ -3386,7 +3386,7 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
           UTL_FILE.put_line(fich_salida_pkg, '');
           UTL_FILE.put_line(fich_salida_pkg,'  INSERT');
-          UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || OWNER_DM || '.T_' || nombre_proceso);
+          UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || OWNER_DM || '.' || nombre_proceso || '_T');
           UTL_FILE.put_line(fich_salida_pkg,'  (');
           open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
           primera_col := 1;
@@ -3590,7 +3590,7 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
           UTL_FILE.put_line(fich_salida_pkg, '');
           UTL_FILE.put_line(fich_salida_pkg, '  INSERT');
-          UTL_FILE.put_line(fich_salida_pkg, '  INTO ' || OWNER_DM || '.T_' || nombre_proceso);
+          UTL_FILE.put_line(fich_salida_pkg, '  INTO ' || OWNER_DM || '.' || nombre_proceso || '_T');
           UTL_FILE.put_line(fich_salida_pkg,'  (');
           open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
           primera_col := 1;
@@ -3806,7 +3806,7 @@ begin
             UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');            
             UTL_FILE.put_line(fich_salida_pkg,'INSERT');
             --UTL_FILE.put_line(fich_salida_pkg,'    INTO ' || OWNER_DM || '.T_' || nombre_tabla_T || '_'' || fch_datos_in ||');
-            UTL_FILE.put_line(fich_salida_pkg,'INTO ' || OWNER_DM || '.T_' || nombre_proceso);
+            UTL_FILE.put_line(fich_salida_pkg,'INTO ' || OWNER_DM || '.' || nombre_proceso || '_T');
             /****/
             /* genero la parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
             /****/
@@ -3928,7 +3928,7 @@ begin
             UTL_FILE.put_line(fich_salida_pkg, '');
             UTL_FILE.put_line(fich_salida_pkg,'INSERT');
             --UTL_FILE.put_line(fich_salida_pkg,'    INTO ' || OWNER_DM || '.T_' || nombre_tabla_T || '_'' || fch_datos_in ||');
-            UTL_FILE.put_line(fich_salida_pkg,'INTO ' || OWNER_DM || '.T_' || nombre_proceso);
+            UTL_FILE.put_line(fich_salida_pkg,'INTO ' || OWNER_DM || '.' || nombre_proceso || '_T');
             /****/
             /* genero la parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
             /****/
@@ -4080,7 +4080,7 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '  if (siguiente_paso_a_ejecutar = 1) then');
       UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := CURRENT_TIMESTAMP;');
       UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
-      UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_proceso || ';');
+      UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_DM || '.' || nombre_proceso || '_T;');
 
       /* (20200117) Angel Ruiz. Se trata de un codigo Ad-hod para el caso de que haya un escenario I para KRC_PRODUCT_AVAIL */
       if (V_EXISTE_ESCENARIO_I = true) then
@@ -4195,7 +4195,7 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '    /* Comienza en el primer paso */');
       UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Comienza el primer paso'';');
       UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := CURRENT_TIMESTAMP;');
-      UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_DM || '.T_' || nombre_proceso || ';');
+      UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_DM || '.' || nombre_proceso || '_T;');
       UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El numero de registros final que se van a intercambiar es: %'', num_reg;');      
       UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
       UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_DM || '.' || reg_tabla.TABLE_NAME || ';');
@@ -4239,7 +4239,7 @@ begin
         end if;        
       end loop;
       close MTDT_TC_DETAIL;
-      UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || OWNER_DM || '.T_' || nombre_proceso);
+      UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || OWNER_DM || '.' || nombre_proceso || '_T');
       UTL_FILE.put_line(fich_salida_pkg, '    ;');
       UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', 2, 0, 0, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
       UTL_FILE.put_line(fich_salida_pkg, '    commit;');
@@ -4283,7 +4283,7 @@ begin
         end if;        
       end loop;
       close MTDT_TC_DETAIL;
-      UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || OWNER_DM || '.T_' || nombre_proceso);
+      UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || OWNER_DM || '.' || nombre_proceso || '_T');
       UTL_FILE.put_line(fich_salida_pkg, '    ;');
       UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', 2, 0, numero_reg, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
 

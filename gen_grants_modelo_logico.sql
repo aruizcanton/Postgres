@@ -78,7 +78,18 @@ BEGIN
         --nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')+1); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
         nombre_tabla_reducido := r_mtdt_modelo_logico_TABLA.TABLE_NAME; /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
 
-        DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || lower(OWNER_DWH) || '.' || lower(r_mtdt_modelo_logico_TABLA.TABLE_NAME) || ' CASCADE;');
+        --DBMS_OUTPUT.put_line('GRANT SELECT ON ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' TO ' || OWNER_DM || ';');
+        /* (20250319) Angel Ruiz. Comento la línea anterior porque después de probar la carga de las tablas de hechos */
+        /* he visto que es mucho mejor que el propietario de los objetos del esquema anl sea el usuario raw. */
+        /* Será este usuario raw quien le de los permisos de SELECT al usuario anl sobre estos objetos 
+            que son suyos aunque están en el esquema anl */
+        --DBMS_OUTPUT.put_line('GRANT ALL ON ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' TO ' || OWNER_DM || ';');
+        DBMS_OUTPUT.put_line('GRANT SELECT ON ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' TO ' || OWNER_DWH || ';');
+        DBMS_OUTPUT.put_line('GRANT SELECT ON ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' TO app_valida' || ';');
+        --if ( regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_FCT$',1,'i') >0) then
+          --DBMS_OUTPUT.put_line('GRANT ALTER ON ' || OWNER_DWH || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' TO ' || OWNER_DM || ';');
+        --end if;
+        
         --DBMS_OUTPUT.put_line('');
         /***************************/
         

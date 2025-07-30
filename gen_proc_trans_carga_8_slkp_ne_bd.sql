@@ -3611,6 +3611,10 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_TC) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después de ejecutar: %'', sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgando las particiones obsoletas...'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgado de particiones obsoletas finalizado.'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
       else
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
@@ -3621,6 +3625,10 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después de ejecutar: %'', sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgando las particiones obsoletas...'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgado de particiones obsoletas finalizado.'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
       end if;
       /* (20250320). Angel Ruiz . -f */
     end if;

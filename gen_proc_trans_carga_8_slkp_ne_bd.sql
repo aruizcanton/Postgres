@@ -3246,7 +3246,7 @@ begin
         UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_insertadas;');
         UTL_FILE.put_line(fich_salida_pkg,'  EXCEPTION');
         UTL_FILE.put_line(fich_salida_pkg,'  WHEN OTHERS THEN');
-        UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''Se ha producido un error en la inserción del escenario INTEGRACIÓN: ' || reg_scenario.SCENARIO || '_' || nombre_proceso || ''';');
+        UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''%. Se ha producido un error en la inserción del escenario: ' || reg_scenario.SCENARIO || '_' || nombre_proceso || ''', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg,'    GET STACKED DIAGNOSTICS v_error_code := RETURNED_SQLSTATE, v_error_msg := MESSAGE_TEXT;');
         UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''Error code: %. Mensaje: %'', v_error_code, v_error_msg;');
         UTL_FILE.put_line(fich_salida_pkg,'    RAISE EXCEPTION USING ERRCODE = v_error_code, MESSAGE = v_error_msg;');
@@ -3374,7 +3374,7 @@ begin
         UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_insertadas;');
         UTL_FILE.put_line(fich_salida_pkg,'  EXCEPTION');
         UTL_FILE.put_line(fich_salida_pkg,'  WHEN OTHERS THEN');
-        UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''Se ha producido un error en la inserción del escenario INTEGRACIÓN: ' || reg_scenario.SCENARIO || '_' || nombre_proceso || ''';');
+        UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''%. Se ha producido un error en la inserción del escenario INTEGRACIÓN: ' || reg_scenario.SCENARIO || '_' || nombre_proceso || ''', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg,'    GET STACKED DIAGNOSTICS v_error_code := RETURNED_SQLSTATE, v_error_msg := MESSAGE_TEXT;');
         UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''Error code: %. Mensaje: %'', v_error_code, v_error_msg;');
         UTL_FILE.put_line(fich_salida_pkg,'    RAISE EXCEPTION USING ERRCODE = v_error_code, MESSAGE = v_error_msg;');
@@ -3415,20 +3415,20 @@ begin
     --UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_hist = 0;');
     --UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_read = 0;');
     UTL_FILE.put_line(fich_salida_pkg, '  /* Calculo la fecha de la partición */');
-    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Inicio del proceso de carga: ' || OWNER_TC || '.prc_' || nombre_proceso || ''';');
-    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El valor del parámetro fch_carga_in es: %.'', fch_carga_in;');
-    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El valor del parámetro fch_datos_in es: %.'', fch_datos_in;');
-    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''El valor del parámetro forzado_in es: %.'', forzado_in;');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''%. Inicio del proceso de carga: ' || OWNER_TC || '.prc_' || nombre_proceso || ''', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''%. El valor del parámetro fch_carga_in es: %.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), fch_carga_in;');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''%. El valor del parámetro fch_datos_in es: %.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), fch_datos_in;');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''%. El valor del parámetro forzado_in es: %.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), forzado_in;');
     --UTL_FILE.put_line(fich_salida_pkg, '  CALL ' || OWNER_TC || '.siguiente_paso(''' || nombre_fich_carga || ''', to_date(fch_datos_in, ''YYYYMMDD''), siguiente_paso_a_ejecutar);');
-    UTL_FILE.put_line(fich_salida_pkg, '  CALL ' || OWNER_TC || '.prc_comun_siguiente_paso(''' || nombre_fich_carga || ''', to_date(fch_carga_in, ''YYYYMMDD''), to_date(fch_datos_in, ''YYYYMMDD''), siguiente_paso_a_ejecutar);');    
-    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''Después de la llamada a siguiente_paso. El valor siguiente_paso_a_ejecutar es: %: '', siguiente_paso_a_ejecutar;');
+    UTL_FILE.put_line(fich_salida_pkg, '  CALL ' || OWNER_TC || '.prc_comun_siguiente_paso(''' || nombre_fich_carga || ''', to_date(fch_carga_in, ''YYYYMMDD''), to_date(fch_datos_in, ''YYYYMMDD''), siguiente_paso_a_ejecutar);');
+    UTL_FILE.put_line(fich_salida_pkg, '  RAISE NOTICE ''%. Después de la llamada a siguiente_paso. El valor siguiente_paso_a_ejecutar es: %: '', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), siguiente_paso_a_ejecutar;');
 
     UTL_FILE.put_line(fich_salida_pkg, '  if (forzado_in = ''F'') then');
     UTL_FILE.put_line(fich_salida_pkg, '    siguiente_paso_a_ejecutar := 1;');
     UTL_FILE.put_line(fich_salida_pkg, '  end if;');
     UTL_FILE.put_line(fich_salida_pkg, '  if (siguiente_paso_a_ejecutar = 1) then');
     UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := current_timestamp;');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor del timestamp de inicio de paso es: %.'', inicio_paso_tmr;');    
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El valor del timestamp de inicio de paso es: %.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), inicio_paso_tmr;');
     --UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
     --UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_TC || '.T_' || nombre_tabla_reducido || ';');
     /* (20200409) Angel Ruiz. NF. Tengo en cuenta el particionado Semanal para calcular la particion q he de crear */
@@ -3567,9 +3567,9 @@ begin
     FOR indx IN lista_scenarios_presentes.FIRST .. lista_scenarios_presentes.LAST
     LOOP
       UTL_FILE.put_line(fich_salida_pkg, '    numero_reg_' || lista_scenarios_presentes(indx) || ' := numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_TC || '.fnc_' || lista_scenarios_presentes(indx) || '_' || nombre_proceso || ' (fch_carga_in, fch_datos_in);');
-      UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es: %.'', numero_reg_' || lista_scenarios_presentes(indx) || ';');
+      UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es: %.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), numero_reg_' || lista_scenarios_presentes(indx) || ';');
       UTL_FILE.put_line(fich_salida_pkg, '    numero_reg_new := numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';' );
-      UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El numero de registros nuevos acumulados es: %'', numero_reg_new;');
+      UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El numero de registros nuevos acumulados es: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), numero_reg_new;');
     END LOOP;
     UTL_FILE.put_line(fich_salida_pkg, '    /* Este tipo de procesos tienen dos pasos, y ha terminado OK el primer paso por eso aparece un 0 en el siguiente campo */');
     --UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.inserta_monitoreo (''' || nombre_fich_carga || ''', 1, 0, numero_reg_new, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
@@ -3579,7 +3579,7 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '    /* Comienza el segundo paso */');
     UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := clock_timestamp();');
     UTL_FILE.put_line(fich_salida_pkg, '    siguiente_paso_a_ejecutar := siguiente_paso_a_ejecutar+1;');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Comienza el segundo paso'';');
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Comienza el segundo paso'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El timestamp del comienzo del paso es: %'', inicio_paso_tmr;');
     /* (20250320). Angel Ruiz . -i */
     /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
@@ -3590,7 +3590,7 @@ begin
     else
         UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T;');
     end if;
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El numero de registros final que se van a intercambiar es: %'', num_reg;');        
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El numero de registros final que se van a intercambiar es: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), num_reg;');
     /* (20200409) Angel Ruiz. NF: Tengo en cuenta el particionado */
     if (v_tipo_particionado = 'D') then
       /* Se trata de particionamiento diario */
@@ -3602,33 +3602,34 @@ begin
       /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
       if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del drop constraint'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Ejecutando truncate_local_data_after_distributing_table...'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_TC) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después de ejecutar: %'', sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
         UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgando las particiones obsoletas...'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgado de particiones obsoletas finalizado.'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
       else
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del drop constraint'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después de ejecutar: %'', sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
         UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgando las particiones obsoletas...'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgado de particiones obsoletas finalizado.'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
       end if;
       /* (20250320). Angel Ruiz . -f */
     end if;
@@ -3691,18 +3692,41 @@ begin
       /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
       if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del drop constraint'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_TC) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
+        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgado de particiones obsoletas finalizado.'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
       else
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del drop constraint'';');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
+        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
+        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
+        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
       end if;
     end if;
     if (v_tipo_particionado = 'W') then
@@ -3731,17 +3755,17 @@ begin
     --UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', 2, 0, num_reg, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El timestamp del fin del paso es: %'', clock_timestamp();');
     UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_comun_inserta_monitoreo (''' || nombre_fich_carga || ''', 2, 0, num_reg, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El segundo paso ha terminado correctamente.'';');
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El segundo paso ha terminado correctamente.'';', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''));
     UTL_FILE.put_line(fich_salida_pkg, '    --commit;');
 
     UTL_FILE.put_line(fich_salida_pkg, '  else');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El procedimiento ' || nombre_fich_carga || ' ya se ha ejecutado previamente de manera exitosa.'';');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''No se ha vuelto a ejecutar.'';');
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El procedimiento ' || nombre_fich_carga || ' ya se ha ejecutado previamente de manera exitosa.'';', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''));
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. No se ha vuelto a ejecutar.'';', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''));
     UTL_FILE.put_line(fich_salida_pkg, '  end if;');
     UTL_FILE.put_line(fich_salida_pkg, 'EXCEPTION');
     UTL_FILE.put_line(fich_salida_pkg, '    WHEN OTHERS THEN');
     UTL_FILE.put_line(fich_salida_pkg, '        GET STACKED DIAGNOSTICS errno := RETURNED_SQLSTATE, msg := MESSAGE_TEXT;');
-    UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''Error al realizar la transformación en el procedimiento: %.'', ' || OWNER_TC || '.neh_' || nombre_proceso || ';');
+    UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''%. Error al realizar la transformación en el procedimiento: %.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), ' || OWNER_TC || '.neh_' || nombre_proceso || ';');
     UTL_FILE.put_line(fich_salida_pkg, '        RAISE NOTICE ''Error code: %. Mensaje: %'', errno, msg;');
     --UTL_FILE.put_line(fich_salida_pkg, '        CALL ' || OWNER_TC || '.inserta_monitoreo (''' || nombre_fich_carga || ''', siguiente_paso_a_ejecutar, 1, 0, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
     UTL_FILE.put_line(fich_salida_pkg, '        CALL ' || OWNER_DM || '.prc_comun_inserta_monitoreo (''' || nombre_fich_carga || ''', siguiente_paso_a_ejecutar, 1, 0, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');    

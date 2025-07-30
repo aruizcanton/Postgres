@@ -20,7 +20,8 @@ DECLARE
     FROM MTDT_MODELO_SUMMARY
     WHERE TRIM(CI) <> 'P' and /* Las que poseen un valor "P" en esta columna son las tablas de PERMITED_VALUES, por lo que no hya que generar su modelo */
     SUBSTR(TRIM(TABLE_NAME), 1, 4) = 'TRN_' /* (20250211). Angel Ruiz. Tablas de transformación */    
-    and trim(TABLE_NAME) in (   /* (20250224)SP1*/
+    and trim(TABLE_NAME) in (   
+      /* (20250224)SP1*/
       'TRN_PDUSG_SUBSCRIBER_DIM'
       ,'TRN_PDUSG_ACCOUNT_DIM'
       ,'TRN_SALES_CNL_DIM'
@@ -47,6 +48,46 @@ DECLARE
       ,'TRN_SALES_RTLR_DIM'
       ,'TRN_INSEC_BTCH_DIM'
       ,'TRN_PDUSG_MVMT_SUBS_FCT'
+      -- FIN SP1
+      -------------------------
+          -------------------------
+          -- SP2
+          --,'BRCKT_DIM'
+          --,'COLL_PYMT_TP_DIM'
+          --,'CSTMR_DOC_FCT'
+          --,'CSTMR_DOC_ST_DIM'
+          --,'CSTMR_DOC_TP_DIM'
+          --,'CSTMR_INV_DTL_FCT'
+          --,'CSTMR_INV_FCT'
+          --,'CSTMR_INV_ST_DIM'
+          --,'CSTMR_PNDG_DOC_FCT'
+          --,'INV_ITM_DIM'
+          --,'INV_PRD_DIM'
+          --,'INV_TP_DIM'
+          --,'RCR_TP_DIM'
+          ,'TRN_PDUSG_INV_PRD_DIM'
+          ,'TRN_PDUSG_INV_ITM_DIM'
+          ,'TRN_PDUSG_CSTMR_DOC_FCT'
+          ,'TRN_PDUSG_CSTMR_INV_DTL_FCT'
+          ,'TRN_PDUSG_CSTMR_INV_FCT'
+          ,'TRN_PDUSG_CSTMR_PNDG_DOC_FCT'
+          --,'TRN_PDUSG_CSTMR_COLLECT_FCT' se suprimió
+          -------------------------
+          -- SP3
+        --, 'HH_DIM'
+        --, 'BNDL_DIM'
+        --, 'HH_MVMT_FCT'
+        --, 'HH_TRCKNG_FCT'
+        , 'TRN_CSTMR_HH_DIM'
+        ----------------------------
+        -- SP4
+        --, 'PRVN_SVC_TRCKNG_FCT'
+        --, 'PRVN_SVC_AR_DIM'
+        --, 'SVC_AR_DIM'
+        , 'TRN_PDUSG_SVC_AR_DIM'
+        , 'TRN_PDUSG_PRVN_SVC_AR_DIM'
+        , 'TRN_PDUSG_PRVN_SVC_TRCKNG_FCT'
+      
     )
     ;    
     
@@ -146,15 +187,15 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL' || ' NOT NULL');
                 else
                   if ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F')  and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                     else
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
@@ -257,15 +298,15 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 or INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL' || ' NOT NULL');
                 else              
                   if ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F')  and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                     else
                       --DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
@@ -524,11 +565,11 @@ BEGIN
       end if;
       
       /* (20250124) Angel Ruiz. Modifico para distribuir las tablas de dimensiones */
-      if ((regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')), '^?+D_',1,'i') >0)
-        or (regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM',1,'i') >0)
-      )  then  /* Se trata de una dimension  */
-        DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ''');');
-      end if;
+      --if ((regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')), '^?+D_',1,'i') >0)
+      --  or (regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM',1,'i') >0)
+      --)  then  /* Se trata de una dimension  */
+      --  DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ''');');
+      --end if;
       /* (20250124) Angel Ruiz. Fin */
       --DBMS_OUTPUT.put_line(';');
       lista_pk.DELETE;      /* Borramos los elementos de la lista */
@@ -555,7 +596,7 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL' || ' NOT NULL');
                   else
                     if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
@@ -663,7 +704,7 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL' || ' NOT NULL');
                   else
                     if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
@@ -817,11 +858,11 @@ BEGIN
           DBMS_OUTPUT.put_line(';');
         end if;
         /* (20250124) Angel Ruiz. Modifico para distribuir las tablas de dimensiones */
-        if ((regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')), '^?+D_',1,'i') >0)
-            or (regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM',1,'i') >0)
-        )  then  /* Se trata de una dimension  */      
-          DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || nombre_tabla_reducido || '_T' || ''');');    
-        end if;
+        --if ((regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')), '^?+D_',1,'i') >0)
+        --    or (regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM',1,'i') >0)
+        --)  then  /* Se trata de una dimension  */      
+        --  DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || nombre_tabla_reducido || '_T' || ''');');    
+        --end if;
         /* (20250124) Angel Ruiz. Fin */        
       end if;
       
@@ -863,10 +904,10 @@ BEGIN
                 DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := '-1';
+                    cadena_values := '-2';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := '-1';
+                      cadena_values := '-2';
                     else
                       if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
@@ -877,7 +918,7 @@ BEGIN
                           cadena_values := 'NULL';
                         end if;
                       else
-                        cadena_values := '''NA#''';
+                        cadena_values := '''N/A''';
                       end if;
                     end if;
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'DES_',1,'i') >0 THEN
@@ -885,10 +926,10 @@ BEGIN
                     pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                     longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                     longitud_des_numerico := to_number(longitud_des);
-                    if (longitud_des_numerico > 8) then
-                      cadena_values := '''NO APLICA''';
+                    if (longitud_des_numerico > 13) then
+                      cadena_values := '''NOT APPLICABLE''';
                     elsif (longitud_des_numerico > 2) then
-                      cadena_values := '''NA#''';
+                      cadena_values := '''N/A''';
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         case 
@@ -906,7 +947,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-1';
+                        cadena_values := '-2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -915,17 +956,17 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 8) then
-                          cadena_values := '''NO APLICA''';
+                        if (longitud_des_numerico > 13) then
+                          cadena_values := '''NOT APPLICABLE''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := '''NA#''';
+                          cadena_values := '''N/A''';
                         else
                           cadena_values := '''N''';
                         end if;
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-1';
+                        cadena_values := '-2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -934,10 +975,10 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 8) then
-                          cadena_values := '''NO APLICA''';
+                        if (longitud_des_numerico > 13) then
+                          cadena_values := '''NOT APPLICABLE''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := '''NA#''';
+                          cadena_values := '''N/A''';
                         else
                           --cadena_values := '''N''';
                           cadena_values := 'NULL';
@@ -950,10 +991,10 @@ BEGIN
                 DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := cadena_values || ', -1';
+                    cadena_values := cadena_values || ', -2';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3),'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0 ) then
-                      cadena_values := cadena_values || ', -1';
+                      cadena_values := cadena_values || ', -2';
                     else
                         if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                           if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
@@ -964,7 +1005,7 @@ BEGIN
                             cadena_values := cadena_values || ', NULL';
                           end if;
                         else
-                          cadena_values := cadena_values || ', ''NA#''';
+                          cadena_values := cadena_values || ', ''N/A''';
                         end if;
                     end if;
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'DES_',1,'i') >0 THEN
@@ -972,10 +1013,10 @@ BEGIN
                     pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                     longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                     longitud_des_numerico := to_number(longitud_des);
-                    if (longitud_des_numerico > 8) then
-                      cadena_values := cadena_values || ', ''NO APLICA''';
+                    if (longitud_des_numerico > 13) then
+                      cadena_values := cadena_values || ', ''NOT APPLICABLE''';
                     elsif (longitud_des_numerico > 2) then
-                      cadena_values := cadena_values || ', ''NA#''';
+                      cadena_values := cadena_values || ', ''N/A''';
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         case 
@@ -993,7 +1034,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -1';
+                        cadena_values := cadena_values || ', -2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1002,17 +1043,17 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 8) then
-                          cadena_values := cadena_values || ', ''NO APLICA''';
+                        if (longitud_des_numerico > 13) then
+                          cadena_values := cadena_values || ', ''NOT APPLICABLE''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := cadena_values || ', ''NA#''';
+                          cadena_values := cadena_values || ', ''N/A''';
                         else
                           cadena_values := cadena_values || ', ''N''';
                         end if;
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -1';
+                        cadena_values := cadena_values || ', -2';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1021,10 +1062,10 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 8) then
-                          cadena_values := cadena_values || ', ''NO APLICA''';
+                        if (longitud_des_numerico > 13) then
+                          cadena_values := cadena_values || ', ''NOT APPLICABLE''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := cadena_values || ', ''NA#''';
+                          cadena_values := cadena_values || ', ''N/A''';
                         else
                           --cadena_values := cadena_values || ', ''N''';
                           cadena_values := cadena_values || ', NULL';
@@ -1054,21 +1095,21 @@ BEGIN
                 DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4),'CVE_',1,'i') >0 THEN
-                    cadena_values := '-2';
+                    cadena_values := '-1';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := '-2';
+                      cadena_values := '-1';
                     else
                         if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                           if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
-                            cadena_values := '''G''';
+                            cadena_values := '''T''';
                           elsif (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
-                            cadena_values := '''GE''';
+                            cadena_values := '''TB''';
                           else
                             cadena_values := 'NULL';
                           end if;
                         else
-                          cadena_values := '''GE#''';
+                          cadena_values := '''TBD''';
                         end if;
                     end if;
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4),'DES_',1,'i') >0 THEN
@@ -1076,17 +1117,17 @@ BEGIN
                     pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                     longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                     longitud_des_numerico := to_number(longitud_des);
-                    if (longitud_des_numerico > 7) then
-                      cadena_values := '''GENERICO''';
+                    if (longitud_des_numerico > 15) then
+                      cadena_values := '''TO BE DETERMINED''';
                     elsif (longitud_des_numerico > 2) then
-                      cadena_values := '''GE#''';
+                      cadena_values := '''TBD''';
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         case 
                           when longitud_des_numerico = 2 then
-                            cadena_values := '''GE''';
+                            cadena_values := '''TB''';
                           when longitud_des_numerico = 1 then
-                            cadena_values := '''G''';
+                            cadena_values := '''T''';
                         end case;
                       else
                         cadena_values := 'NULL';
@@ -1097,7 +1138,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-2';
+                        cadena_values := '-1';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -1106,17 +1147,17 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 7) then
-                          cadena_values := '''GENERICO''';
+                        if (longitud_des_numerico > 15) then
+                          cadena_values := '''TO BE DETERMINED''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := '''GE#''';
+                          cadena_values := '''TBD''';
                         else
-                          cadena_values := '''G''';
+                          cadena_values := '''T''';
                         end if;
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-2';
+                        cadena_values := '-1';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := 'now()';
                       else
@@ -1125,10 +1166,10 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 7) then
-                          cadena_values := '''GENERICO''';
+                        if (longitud_des_numerico > 15) then
+                          cadena_values := '''TO BE DETERMINED''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := '''GE#''';
+                          cadena_values := '''TBD''';
                         else
                           --cadena_values := '''G''';
                           cadena_values := 'NULL';
@@ -1141,21 +1182,21 @@ BEGIN
                 DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := cadena_values || ', -2';
+                    cadena_values := cadena_values || ', -1';
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
                     if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := cadena_values || ', -2';
+                      cadena_values := cadena_values || ', -1';
                     else
                       if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
-                          cadena_values := cadena_values || ', ''G''';
+                          cadena_values := cadena_values || ', ''T''';
                         elsif (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
-                          cadena_values := cadena_values || ', ''GE''';
+                          cadena_values := cadena_values || ', ''TB''';
                         else
                           cadena_values := cadena_values || ', NULL';
                         end if;
                       else
-                        cadena_values := cadena_values || ', ''GE#''';
+                        cadena_values := cadena_values || ', ''TBD''';
                       end if;
                     end if;
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'DES_',1,'i') >0 THEN
@@ -1163,17 +1204,17 @@ BEGIN
                     pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                     longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                     longitud_des_numerico := to_number(longitud_des);
-                    if (longitud_des_numerico > 7) then
-                      cadena_values := cadena_values || ', ''GENERICO''';
+                    if (longitud_des_numerico > 15) then
+                      cadena_values := cadena_values || ', ''TO BE DETERMINED''';
                     elsif (longitud_des_numerico > 2) then
-                      cadena_values := cadena_values || ', ''GE#''';
+                      cadena_values := cadena_values || ', ''TBD''';
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         case 
                           when longitud_des_numerico = 2 then
-                            cadena_values := cadena_values || ', ''GE''';
+                            cadena_values := cadena_values || ', ''TB''';
                           when longitud_des_numerico = 1 then
-                            cadena_values := cadena_values || ', ''G''';
+                            cadena_values := cadena_values || ', ''T''';
                         end case;
                       else
                         cadena_values := cadena_values || ', NULL';
@@ -1184,7 +1225,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -2';
+                        cadena_values := cadena_values || ', -1';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1193,17 +1234,17 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 7) then
-                          cadena_values := cadena_values || ', ''GENERICO''';
+                        if (longitud_des_numerico > 15) then
+                          cadena_values := cadena_values || ', ''TO BE DETERMINED''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := cadena_values || ', ''GE#''';
+                          cadena_values := cadena_values || ', ''TBD''';
                         else
-                          cadena_values := cadena_values || ', ''G''';
+                          cadena_values := cadena_values || ', ''T''';
                         end if;
                       end if;
                     else
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -2';
+                        cadena_values := cadena_values || ', -1';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', now()';
                       else
@@ -1212,10 +1253,10 @@ BEGIN
                         pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
                         longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
                         longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 7) then
-                          cadena_values := cadena_values || ', ''GENERICO''';
+                        if (longitud_des_numerico > 15) then
+                          cadena_values := cadena_values || ', ''TO BE DETERMINED''';
                         elsif (longitud_des_numerico > 2) then
-                          cadena_values := cadena_values || ', ''GE#''';
+                          cadena_values := cadena_values || ', ''TBD''';
                         else
                           --cadena_values := cadena_values || ', ''G''';
                           cadena_values := cadena_values || ', NULL';
@@ -1229,199 +1270,8 @@ BEGIN
           DBMS_OUTPUT.put_line('VALUES');
           DBMS_OUTPUT.put_line('(' || cadena_values || ');');
           CLOSE c_mtdt_modelo_logico_COLUMNA;
-          /* Siguiente INSERT "NO INFORMADO" */
-          --DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
-          DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
-          DBMS_OUTPUT.put_line('(');
-          OPEN c_mtdt_modelo_logico_COLUMNA (r_mtdt_modelo_logico_TABLA.TABLE_NAME);
-          primera_col := 1;
-          cadena_values := '';
-          LOOP
-            FETCH c_mtdt_modelo_logico_COLUMNA
-            INTO r_mtdt_modelo_logico_COLUMNA;
-            EXIT WHEN c_mtdt_modelo_logico_COLUMNA%NOTFOUND;
-    
-            IF primera_col = 1 THEN /* Si es primera columna */
-                DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
-                CASE
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := '-3';
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
-                    if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values :=  '-3';
-                    else
-                      if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
-                        if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
-                          cadena_values := '''N''';
-                        elsif (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
-                          cadena_values := '''NI''';
-                        else
-                          cadena_values := 'NULL';
-                        end if;
-                      else
-                        cadena_values := '''NI#''';
-                      end if;
-                    end if;
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'DES_',1,'i') >0 THEN
-                    pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
-                    pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
-                    longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
-                    longitud_des_numerico := to_number(longitud_des);
-                    if (longitud_des_numerico > 11) then
-                      cadena_values := '''NO INFORMADO''';
-                    elsif (longitud_des_numerico > 2) then
-                      cadena_values := '''NI#''';
-                    else
-                      if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        case 
-                          when longitud_des_numerico = 2 then
-                            cadena_values := '''NI''';
-                          when longitud_des_numerico = 1 then
-                            cadena_values := '''N''';
-                        end case;
-                      else
-                        cadena_values := 'NULL';
-                      end if;
-                    end if;
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'FCH_',1,'i') >0 THEN
-                      cadena_values := 'now()';
-                  ELSE
-                    if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-3';
-                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
-                        cadena_values := 'now()';
-                      else
-                        /* VARCHAR */
-                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
-                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
-                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
-                        longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 11) then
-                          cadena_values := '''NO INFORMADO''';
-                        elsif (longitud_des_numerico > 2) then
-                          cadena_values := '''NI#''';
-                        else
-                          cadena_values := '''N''';
-                        end if;
-                      end if;
-                    else
-                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := '-3';
-                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
-                        cadena_values := 'now()';
-                      else
-                        /* VARCHAR */
-                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
-                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
-                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
-                        longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 11) then
-                          cadena_values := '''NO INFORMADO''';
-                        elsif (longitud_des_numerico > 2) then
-                          cadena_values := '''NI#''';
-                        else
-                          --cadena_values := '''N''';
-                          cadena_values := 'NULL';                      
-                        end if;
-                      end if;
-                    end if;
-                END CASE;  
-                primera_col := 0;
-            ELSE  /* si no es primera columna */
-                DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
-                CASE
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
-                    cadena_values := cadena_values || ', -3';
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 3), 'ID_',1,'i') >0 THEN
-                    if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'NUMBER') > 0) then
-                      cadena_values := cadena_values || ', -3';
-                    else
-                      if (instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0 or instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
-                        if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(1)') > 0) then
-                          cadena_values := cadena_values || ', ''N''';
-                        elsif (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N' and instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(2)') > 0) then
-                          cadena_values := cadena_values || ', ''NI''';
-                        else
-                          cadena_values := cadena_values || ', NULL';
-                        end if;
-                      else                  
-                        cadena_values := cadena_values || ', ''NI#''';
-                      end if;
-                    end if;
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'DES_',1,'i') >0 THEN
-                    pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
-                    pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
-                    longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
-                    longitud_des_numerico := to_number(longitud_des);
-                    if (longitud_des_numerico > 11) then
-                      cadena_values := cadena_values || ', ''NO INFORMADO''';
-                    elsif (longitud_des_numerico > 2) then
-                      cadena_values := cadena_values || ', ''NI#''';
-                    else
-                      if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        case 
-                          when longitud_des_numerico = 2 then
-                            cadena_values := cadena_values || ', ''NI''';
-                          when longitud_des_numerico = 1 then
-                            cadena_values := cadena_values || ', ''N''';
-                        end case;
-                      else
-                        cadena_values := cadena_values || ', NULL';
-                      end if;
-                    end if;
-                  WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4),'FCH_',1,'i') >0 THEN
-                      cadena_values := cadena_values || ', now()';
-                  ELSE
-                    if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -3';
-                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
-                        cadena_values := cadena_values || ', now()';
-                      else
-                        /* VARCHAR */
-                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
-                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
-                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
-                        longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 11) then
-                          cadena_values := cadena_values || ', ''NO INFORMADO''';
-                        elsif (longitud_des_numerico > 2) then
-                          cadena_values := cadena_values || ', ''NI#''';
-                        else
-                          cadena_values := cadena_values || ', ''N''';
-                        end if;
-                      end if;
-                    else
-                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -3';
-                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
-                        cadena_values := cadena_values || ', now()';
-                      else
-                        /* VARCHAR */
-                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
-                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
-                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
-                        longitud_des_numerico := to_number(longitud_des);
-                        if (longitud_des_numerico > 11) then
-                          cadena_values := cadena_values || ', ''NO INFORMADO''';
-                        elsif (longitud_des_numerico > 2) then
-                          cadena_values := cadena_values || ', ''NI#''';
-                        else
-                          --cadena_values := cadena_values || ', ''N''';
-                          cadena_values := cadena_values || ', NULL';
-                        end if;
-                      end if;
-                    end if;
-                END CASE;  
-            END IF;
-          END LOOP; 
-          DBMS_OUTPUT.put_line(')');
-          DBMS_OUTPUT.put_line('VALUES');
-          DBMS_OUTPUT.put_line('(' || cadena_values || ');');
           DBMS_OUTPUT.put_line('COMMIT;');
           DBMS_OUTPUT.put_line('');
-          CLOSE c_mtdt_modelo_logico_COLUMNA;
         end if;
       end if;
       /**********************/

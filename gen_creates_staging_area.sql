@@ -127,7 +127,7 @@ BEGIN
       INTO reg_summary;
       EXIT WHEN dtd_interfaz_summary%NOTFOUND;
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'STG_' || reg_summary.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE UNLOGGED TABLE ' || OWNER_SA || '.' || 'STG_' || reg_summary.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
       primera_col := 1;
@@ -448,7 +448,7 @@ BEGIN
       INTO reg_summary_history;
       EXIT WHEN dtd_interfaz_summary_history%NOTFOUND;  
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'STH_' || reg_summary_history.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE UNLOGGED TABLE ' || OWNER_SA || '.' || 'STH_' || reg_summary_history.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary_history.CONCEPT_NAME, reg_summary_history.SOURCE);
       primera_col := 1;

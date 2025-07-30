@@ -3909,6 +3909,7 @@ begin
       UTL_FILE.put_line(fich_salida_load, '  ssh "${USER_DESTINO_SCP}"@"${DESTINO_IP}" "[ -d ${PATH_DESTINO}/${FECHA} ] || mkdir -p ${PATH_DESTINO}/${FECHA}"');
       UTL_FILE.put_line(fich_salida_load, '  rc=$?');
       UTL_FILE.put_line(fich_salida_load, '  if [ $rc -ne 0 ]; then');
+      UTL_FILE.put_line(fich_salida_load, '    echo "Surgió un error al crear el directorio ${PATH_DESTINO}/${FECHA} en el nodo remoto ${DESTINO_IP} el archivo ${PATH_SALIDA}${ARCHIVO_SALIDA}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');      UTL_FILE.put_line(fich_salida_load, '    SUBJECT="${REQ_NUM}:  Surgio un error en el envio del archivo."');      
       UTL_FILE.put_line(fich_salida_load, '    SUBJECT="${REQ_NUM}:  Surgio un error al crear el directorio ${PATH_DESTINO}/${FECHA} en la máquina destino ${DESTINO_IP}."');
       UTL_FILE.put_line(fich_salida_load, '    echo "Surgio un error al crear el directorio ${PATH_DESTINO}/${FECHA} en la máquina destino ${DESTINO_IP}." | mailx -s "${SUBJECT}" "${CTA_MAIL}"');
       UTL_FILE.put_line(fich_salida_load, '    # shellcheck disable=SC2005');
@@ -3917,6 +3918,28 @@ begin
       UTL_FILE.put_line(fich_salida_load, '    exit 1');
       UTL_FILE.put_line(fich_salida_load, '  fi');
       UTL_FILE.put_line(fich_salida_load, '  scp "${PATH_SALIDA}${ARCHIVO_SALIDA}" "${USER_DESTINO_SCP}"@"${DESTINO_IP}":"${PATH_DESTINO}/${FECHA}"');
+      UTL_FILE.put_line(fich_salida_load, '  rc=$?');
+      UTL_FILE.put_line(fich_salida_load, '  if [ $rc -ne 0 ]; then');
+      UTL_FILE.put_line(fich_salida_load, '    echo "Surgió un error al copiar al nodo remoto ${DESTINO_IP} el archivo ${PATH_SALIDA}${ARCHIVO_SALIDA}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');      UTL_FILE.put_line(fich_salida_load, '    SUBJECT="${REQ_NUM}:  Surgio un error en el envio del archivo."');
+      UTL_FILE.put_line(fich_salida_load, '    echo "Surgio un error al enviar el archivo ${ARCHIVO_SALIDA} al servidor ${DESTINO_IP}." | mailx -s "${SUBJECT}" "${CTA_MAIL}"');
+      UTL_FILE.put_line(fich_salida_load, '    # shellcheck disable=SC2005');
+      UTL_FILE.put_line(fich_salida_load, '    echo "$(date)"');
+      UTL_FILE.put_line(fich_salida_load, '    InsertaFinFallido');
+      UTL_FILE.put_line(fich_salida_load, '    exit 1');
+      UTL_FILE.put_line(fich_salida_load, '  fi');
+      UTL_FILE.put_line(fich_salida_load, '  # Comprimimos el archivo');
+      UTL_FILE.put_line(fich_salida_load, '  echo "Comprimimos el archivo ${PATH_SALIDA}${ARCHIVO_SALIDA}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
+      UTL_FILE.put_line(fich_salida_load, '  pigz "${PATH_SALIDA}${ARCHIVO_SALIDA}"');
+      UTL_FILE.put_line(fich_salida_load, '  rc=$?');
+      UTL_FILE.put_line(fich_salida_load, '  if [ $rc -ne 0 ]; then');
+      UTL_FILE.put_line(fich_salida_load, '    echo "Surgió un error al comprimir ${PATH_SALIDA}${ARCHIVO_SALIDA}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
+      UTL_FILE.put_line(fich_salida_load, '    SUBJECT="${REQ_NUM}:  Surgio un error al comprimir el archivo."');
+      UTL_FILE.put_line(fich_salida_load, '    echo "Surgio un error al comprimir el archivo ${ARCHIVO_SALIDA}." | mailx -s "${SUBJECT}" "${CTA_MAIL}"');
+      UTL_FILE.put_line(fich_salida_load, '    # shellcheck disable=SC2005');
+      UTL_FILE.put_line(fich_salida_load, '    echo "$(date)"');
+      UTL_FILE.put_line(fich_salida_load, '    InsertaFinFallido');
+      UTL_FILE.put_line(fich_salida_load, '    exit 1');
+      UTL_FILE.put_line(fich_salida_load, '  fi');
     end if;
     /* (20161004) Angel Ruiz. Fin cambio Temporal*/
     UTL_FILE.put_line(fich_salida_load, '  rc=$?');
@@ -3928,20 +3951,6 @@ begin
     UTL_FILE.put_line(fich_salida_load, '    InsertaFinFallido');
     UTL_FILE.put_line(fich_salida_load, '    exit 1');
     UTL_FILE.put_line(fich_salida_load, '  fi');
-    UTL_FILE.put_line(fich_salida_load, '  # Comprimimos el archivo');
-    UTL_FILE.put_line(fich_salida_load, '  echo "Comprimimos el archivo ${PATH_SALIDA}${ARCHIVO_SALIDA}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
-    UTL_FILE.put_line(fich_salida_load, '  pigz -f "${PATH_SALIDA}${ARCHIVO_SALIDA}"');
-    UTL_FILE.put_line(fich_salida_load, '  rc=$?');
-    UTL_FILE.put_line(fich_salida_load, '  if [ $rc -ne 0 ]; then');
-    UTL_FILE.put_line(fich_salida_load, '    echo "Surgió un error al comprimir ${PATH_SALIDA}${ARCHIVO_SALIDA}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
-    UTL_FILE.put_line(fich_salida_load, '    SUBJECT="${REQ_NUM}:  Surgio un error al comprimir el archivo."');
-    UTL_FILE.put_line(fich_salida_load, '    echo "Surgio un error al comprimir el archivo ${ARCHIVO_SALIDA}." | mailx -s "${SUBJECT}" "${CTA_MAIL}"');
-    UTL_FILE.put_line(fich_salida_load, '    # shellcheck disable=SC2005');
-    UTL_FILE.put_line(fich_salida_load, '    echo "$(date)"');
-    UTL_FILE.put_line(fich_salida_load, '    InsertaFinFallido');
-    UTL_FILE.put_line(fich_salida_load, '    exit 1');
-    UTL_FILE.put_line(fich_salida_load, '  fi');
-
     /* (20161004) Angel Ruiz. Modificacion Temporal. Se trata de comentar la linea que envia los ficheros */
     /* dado que seran concatenados con otra fuente */
     if ( reg_tabla.TABLE_NAME in ('CALIDAD_PERCIBIDA', 'DICCIONARIO_TT', 'ESPECIFICACION_TT', 'ESTADO_TAREA', 'FORMA_CONTACTO'
@@ -3963,6 +3972,47 @@ begin
     UTL_FILE.put_line(fich_salida_load, '  return 0');
     UTL_FILE.put_line(fich_salida_load, '}');
     UTL_FILE.put_line(fich_salida_load, '');
+
+    UTL_FILE.put_line(fich_salida_load, '################################################################################');
+    UTL_FILE.put_line(fich_salida_load, '# PURGADO DE FICHEROS ANTIGUOS                                                          #');
+    UTL_FILE.put_line(fich_salida_load, '################################################################################');
+    UTL_FILE.put_line(fich_salida_load, 'PurgadoFicherosObsoletos()');
+    UTL_FILE.put_line(fich_salida_load, '{');
+    UTL_FILE.put_line(fich_salida_load, '   # Se obtiene la fecha a partir de la cual los ficheros más antiguos a esta fecha se eliminarán.');
+    UTL_FILE.put_line(fich_salida_load, '   echo "Se inicia el procedimiento para el purgado de los ficheros que ya están obsoletos.' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
+    UTL_FILE.put_line(fich_salida_load, '   echo "El directorio que se va a purgar es: ${ANA_FUENTE}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
+    UTL_FILE.put_line(fich_salida_load, '   FECHA_MAXIMA_ANTIGUEDAD=$(');
+    UTL_FILE.put_line(fich_salida_load, '     psql -h "$HOST" -p "$PORT" -U "$BD_USUARIO" -d "$DB_NAME" -t --no-align -c "');
+    UTL_FILE.put_line(fich_salida_load, '        select to_char(${FECHA} - interval ''${ANTIGUEDAD_FICH_PLANOS} day'', ''YYYYMMDD'');"');
+    UTL_FILE.put_line(fich_salida_load, '   )');
+    UTL_FILE.put_line(fich_salida_load, '   rc=$?');
+    UTL_FILE.put_line(fich_salida_load, '   if [ $rc -ne 0 ]; then');
+    UTL_FILE.put_line(fich_salida_load, '     SUBJECT="ERROR: Al obtener la fecha."');
+    UTL_FILE.put_line(fich_salida_load, '     echo "Surgio un error al obtener la fecha de máxima antiguedad." | mailx -s "${SUBJECT}" "${CTA_MAIL}"');
+    UTL_FILE.put_line(fich_salida_load, '     # shellcheck disable=SC2005');    
+    UTL_FILE.put_line(fich_salida_load, '     echo "$(date)"');
+    UTL_FILE.put_line(fich_salida_load, '     InsertaFinFallido');
+    UTL_FILE.put_line(fich_salida_load, '     exit 1');
+    UTL_FILE.put_line(fich_salida_load, '   fi');
+    UTL_FILE.put_line(fich_salida_load, '   echo "Fecha a considerar como fecha más antigua es ${FECHA_MAXIMA_ANTIGUEDAD}"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
+    UTL_FILE.put_line(fich_salida_load, '   echo "Los directorios más antiguos a ${FECHA_MAXIMA_ANTIGUEDAD}" serán eliminados.' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');    
+    UTL_FILE.put_line(fich_salida_load, '   # Recorremos cada subdirectorio');
+    UTL_FILE.put_line(fich_salida_load, '   for dir in "${ANA_FUENTE}"/*; do');
+    UTL_FILE.put_line(fich_salida_load, '   # Verificamos que sea un directorio');    
+    UTL_FILE.put_line(fich_salida_load, '   if [ -d "${dir}" ]; then');
+    UTL_FILE.put_line(fich_salida_load, '     # Extraemos solo el nombre (basename)');
+    UTL_FILE.put_line(fich_salida_load, '     fecha_dir=$(basename "${dir}")');
+    UTL_FILE.put_line(fich_salida_load, '     # Validamos que el nombre sea un número de 8 dígitos');
+    UTL_FILE.put_line(fich_salida_load, '     if [[ "${fecha_dir}" =~ ^[0-9]{8}$ ]]; then');
+    UTL_FILE.put_line(fich_salida_load, '       if [ "{$fecha_dir}" -lt "$FECHA_LIMITE" ]; then');
+    UTL_FILE.put_line(fich_salida_load, '         echo "Eliminando directorio: $dir"' || ' >> "${' || NAME_DM || '_TRAZAS}"/' || nombre_proceso || '_"${FECHA_HORA}"' || '.log 2>' || '&' || '1');
+    UTL_FILE.put_line(fich_salida_load, '         rm -rf "$dir"');
+    UTL_FILE.put_line(fich_salida_load, '       fi');
+    UTL_FILE.put_line(fich_salida_load, '     fi');
+    UTL_FILE.put_line(fich_salida_load, '   fi');
+    UTL_FILE.put_line(fich_salida_load, '   done');
+    UTL_FILE.put_line(fich_salida_load, '  return 0');
+    UTL_FILE.put_line(fich_salida_load, '}');
     UTL_FILE.put_line(fich_salida_load, '################################################################################');
     UTL_FILE.put_line(fich_salida_load, '# EJECUCION DEL PROGRAMA                                                       #');
     UTL_FILE.put_line(fich_salida_load, '################################################################################');
@@ -4090,6 +4140,7 @@ begin
       UTL_FILE.put_line(fich_salida_load, '#OBTENEMOS Interfaz');
       UTL_FILE.put_line(fich_salida_load, 'ObtenInterfaz');
       UTL_FILE.put_line(fich_salida_load, 'ValidaConteo');
+      UTL_FILE.put_line(fich_salida_load, 'PurgadoFicherosObsoletos');
     end if;
     UTL_FILE.put_line(fich_salida_load, 'GeneraFlag');
     /* (20160712) Angel Ruiz. Modificacion Temporal. Se trata de comentar la linea que envia los ficheros */
@@ -4102,13 +4153,13 @@ begin
           , 'VENDEDOR', 'VENTAS_REGISTRADAS')) then
       UTL_FILE.put_line(fich_salida_load, '#EnviaArchivos');
     else
-      UTL_FILE.put_line(fich_salida_load, '#EnviaArchivos');
+      UTL_FILE.put_line(fich_salida_load, 'EnviaArchivos');
     end if;
     UTL_FILE.put_line(fich_salida_load, 'InsertaFinOK');
     UTL_FILE.put_line(fich_salida_load, '################################################################################');
     UTL_FILE.put_line(fich_salida_load, '# FIN DEL SHELL                                                                #');
     UTL_FILE.put_line(fich_salida_load, '################################################################################');
-    UTL_FILE.put_line(fich_salida_load, 'echo "Termina Proceso: $(date +%Y%m%d_%H%M%S)." >> "${' || NAME_DM || '_TRAZAS}"/' || reg_tabla.TABLE_NAME || '_"${FECHA_HORA}"' || '.log ');
+    UTL_FILE.put_line(fich_salida_load, 'echo "Termina Proceso: $(date)"');
     --UTL_FILE.put_line(fich_salida_load, 'InsertaFinOK');
     UTL_FILE.put_line(fich_salida_load, 'exit 0');
     UTL_FILE.put_line(fich_salida_load, '');

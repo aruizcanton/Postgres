@@ -19,10 +19,105 @@ DECLARE
       trim(FILE_VALIDATION) "FILE_VALIDATION"   /* (20160818) Angel Ruiz. NF. Validar en otro directorio */
     FROM MTDT_INTERFACE_SUMMARY    
     WHERE SOURCE <> 'SA' -- Este origen es el que se ha considerado para las dimensiones que son de integracion ya que se cargan a partir de otras dimensiones de SA 
-    and CONCEPT_NAME in ('ACCOUNT', 'ACCOUNT_FIX'
-    , 'SUBSCRIBER', 'SUBSCRIBER_FIX', 'CSTMR', 'CSTMR_FIX', 'AR_CTC_PRFL', 'AR_CTC_PRFL_FIX'
-    , 'CNL_FIX', 'CSTMR_CLSS', 'CSTMR_CLSS_FIX', 'GEO_AREA', 'GEO_AREA_FIX', 'PD', 'PD_FIX', 'PYMT_ENT'
-    , 'PYMT_ENT_FIX', 'RTLR', 'RTLR_FIX'
+    and CONCEPT_NAME in (
+    -- SP1
+--    'ACCOUNT'
+--    , 'ACCOUNT_FIX'
+--    , 'SUBSCRIBER'
+--    , 'SUBSCRIBER_FIX'
+--    , 'CSTMR'
+--    , 'CSTMR_FIX'
+--    , 'AR_CTC_PRFL'
+--    , 'AR_CTC_PRFL_FIX'
+--    , 'CNL'
+--    , 'CNL_FIX'
+--    , 'CSTMR_CLSS'
+--    , 'CSTMR_CLSS_FIX'
+--    , 'GEO_AREA'
+--    , 'GEO_AREA_FIX'
+--    , 'PD'
+--    , 'PD_FIX'
+--    , 'PYMT_ENT'
+--    , 'PYMT_ENT_FIX'
+--    , 'RTLR'
+--    , 'RTLR_FIX'
+--    , 'ORG'
+--    , 'EMPE'
+--    , 'EMPE_FIX'
+--    , 'INV_ITM'
+--    , 'INV_ITM_FIX'
+    -- Fin SP1
+    -- Resto de Extractores
+    ------------------------
+--    , 'CSTMR_COLLECT'
+--    , 'CSTMR_COLLECT_FIX'
+--    , 'CSTMR_INV'
+--    , 'CSTMR_INV_FIX'
+--    , 'CSTMR_INV_DTL'
+--    , 'CSTMR_INV_DTL_FIX'
+--    , 'CSTMR_PNDG_DOC'
+--    , 'CSTMR_PNDG_DOC_FIX'
+--    , 'HH_FIX'
+--    , 'INV_PRD'
+--    , 'PRVN_SVC'
+--    , 'PRVN_SVC_FIX'    
+--    , 'PRVN_SVC_AR'
+--    , 'PRVN_SVC_AR_FIX'
+--    , 'CELL'
+'ACCOUNT'
+,'ACCOUNT_FIX'
+,'AR_CTC_PRFL'
+,'AR_CTC_PRFL_FIX'
+,'CELL'
+,'CNL'
+,'CNL_FIX'
+,'CSTMR'
+,'CSTMR_CLSS'
+,'CSTMR_CLSS_FIX'
+,'CSTMR_COLLECT'
+,'CSTMR_COLLECT_FIX'
+,'CSTMR_FIX'
+,'CSTMR_INV'
+,'CSTMR_INV_DTL'
+,'CSTMR_INV_DTL_FIX'
+,'CSTMR_INV_FIX'
+,'CSTMR_PNDG_DOC'
+,'CSTMR_PNDG_DOC_FIX'
+,'DOC_TP_FIX'
+,'DVC'
+,'EMPE'
+,'EMPE_FIX'
+,'GEO_AREA'
+,'GEO_AREA_FIX'
+,'HH_FIX'
+,'INV_ITM'
+,'INV_ITM_FIX'
+,'INV_ITM_TP'
+,'INV_ITM_TP_FIX'
+,'INV_PRD'
+,'IP_FIX'
+,'NTW_CMPT_FIX'
+,'ORG'
+,'PD'
+,'PD_FIX'
+,'PD_OFRG'
+,'PD_OFRG_FIX'
+,'PRVN_SVC'
+,'PRVN_SVC_AR'
+,'PRVN_SVC_AR_FIX'
+,'PRVN_SVC_FIX'
+,'PST_ADR_FIX'
+,'PYMT_ENT'
+,'PYMT_ENT_FIX'
+,'RTLR'
+,'RTLR_FIX'
+,'ST'
+,'ST_FIX'
+,'SUBSCRIBER'
+,'SUBSCRIBER_FIX'
+,'ULTIMO_EVENTO'
+, 'EMPE_RRHH'
+, 'TAC'
     );
     --and trim(CONCEPT_NAME) in ('CUENTA', 'PARQUE_ABO_PRE');
     --and TRIM(CONCEPT_NAME) in ('RECARGAS_MVNO', 'CANAL', 'CADENA', 'SUBTIPO_CANAL', 'MEDIO_RECARGA', 'ERROR_RECARGA');
@@ -263,7 +358,8 @@ BEGIN
         UTL_FILE.put_line(fich_salida, '');
         UTL_FILE.put_line(fich_salida, '    AFTER LOAD DO');
         UTL_FILE.put_line(fich_salida, '        $$ alter table ' || OWNER_SA || '.sth_' || lower(reg_summary.CONCEPT_NAME) || ' attach partition ' || OWNER_SA || '.sth_' || lower(reg_summary.CONCEPT_NAME) || '_' || '__FCH_DATOS__');
-        UTL_FILE.put_line(fich_salida, '          for values from (__FCH_DATOS__) to (__FCH_DATOS_MAS_UNO__);');
+        UTL_FILE.put_line(fich_salida, '          for values from (__FCH_DATOS__) to (__FCH_DATOS_MAS_UNO__); $$,');
+        UTL_FILE.put_line(fich_salida, '        $$ call ' || OWNER_SA || '.prc_adm_clean_sth_partitions(''sth_' || lower(reg_summary.CONCEPT_NAME) || ''');');
         UTL_FILE.put_line(fich_salida, '        $$;');
         UTL_FILE.put_line(fich_salida, '');
       end if;
@@ -335,10 +431,13 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '# Autor      : SYNAPSYS                                                     #');
     UTL_FILE.put_line(fich_salida_sh, '# Proposito  : Shell que ejecuta los procesos de STAGING para ' || NAME_DM || '.        #');
     UTL_FILE.put_line(fich_salida_sh, '# Parametros :                                                              #');
-    UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
+    UTL_FILE.put_line(fich_salida_sh, '#              - 3 parámetros: <fch_carga> <fch_datos> <forzado>            #');
+    UTL_FILE.put_line(fich_salida_sh, '#              - 2 parámetros: <fch_carga> <forzado>                        #');
+    UTL_FILE.put_line(fich_salida_sh, '#                (en este caso fch_datos = fch_carga)                       #');
     UTL_FILE.put_line(fich_salida_sh, '# Ejecucion  :                                                              #');
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
-    UTL_FILE.put_line(fich_salida_sh, '# Historia : 09-Septiembre-2024 -> Creacion                                 #');
+    UTL_FILE.put_line(fich_salida_sh, '# Historia : 07-03-2025 -> Creacion                                         #');
+    UTL_FILE.put_line(fich_salida_sh, '#            27-Marzo-2025  -> Ajuste para permitir 2 o 3 parámetros        #');
     UTL_FILE.put_line(fich_salida_sh, '# Caja de Control - M :                                                     #');
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
     UTL_FILE.put_line(fich_salida_sh, '# Observaciones: En caso de reproceso colocar la fecha deseada              #');
@@ -384,7 +483,6 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '    fi');
     UTL_FILE.put_line(fich_salida_sh, '    return 0');
     UTL_FILE.put_line(fich_salida_sh, '}');
-
     UTL_FILE.put_line(fich_salida_sh, '');
     UTL_FILE.put_line(fich_salida_sh, '################################################################################');
     UTL_FILE.put_line(fich_salida_sh, '# EJECUCION DEL PROGRAMA EN PRO C O QUERYS                                     #');
@@ -392,17 +490,33 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '# shellcheck disable=SC1091');
     UTL_FILE.put_line(fich_salida_sh, '. "${HOME_PRODUCCION}"/' || NAME_DM || '/COMUN/Shell/Entorno/Entorno' || NAME_DM || '_' || PAIS || '.sh');
     UTL_FILE.put_line(fich_salida_sh, '# Comprobamos si el numero de parametros es el correcto');
-    UTL_FILE.put_line(fich_salida_sh, 'if [ $# -ne 3 ] ; then');
-    UTL_FILE.put_line(fich_salida_sh, '  SUBJECT="Numero de paramatros de entrada incorrecto. Uso: ${0} <fch_carga> <fch_datos> <forzado>"');
+    UTL_FILE.put_line(fich_salida_sh, 'if [ $# -ne 2 ] && [ $# -ne 3 ]; then');
+    UTL_FILE.put_line(fich_salida_sh, '  SUBJECT="Número de parámetros de entrada incorrecto. Uso: ${0} <fch_carga> [<fch_datos>] <forzado>"');
     UTL_FILE.put_line(fich_salida_sh, '  echo "${SUBJECT}"');        
     UTL_FILE.put_line(fich_salida_sh, '  exit 1');
     UTL_FILE.put_line(fich_salida_sh, 'fi');
     UTL_FILE.put_line(fich_salida_sh, '# Recogida de parametros');
-    UTL_FILE.put_line(fich_salida_sh, 'FCH_CARGA=${1}');
-    UTL_FILE.put_line(fich_salida_sh, 'FCH_DATOS=${2}');
-    --UTL_FILE.put_line(fich_salida_sh, 'FCH_DATOS_DOS_DIGITOS=`echo ${FCH_DATOS} | awk ''{ printf "%s%s%s", substr($1,3,2), substr($1,5,2), substr($1,7,2) ; }''`');
-    --UTL_FILE.put_line(fich_salida_sh, 'FCH_DATOS_DOS_DIGITOS=`echo ${FCH_DATOS} | awk ''{ printf "%s%s%s", substr($1,7,2), substr($1,5,2), substr($1,3,2) ; }''`');
-    UTL_FILE.put_line(fich_salida_sh, 'BAN_FORZADO=${3}');    
+    UTL_FILE.put_line(fich_salida_sh, 'if [ $# -eq 3 ]; then');
+    UTL_FILE.put_line(fich_salida_sh, '  FCH_CARGA=${1}');
+    UTL_FILE.put_line(fich_salida_sh, '  FCH_DATOS=${2}');
+    UTL_FILE.put_line(fich_salida_sh, '  BAN_FORZADO=${3}');
+    UTL_FILE.put_line(fich_salida_sh, 'else');
+    UTL_FILE.put_line(fich_salida_sh, '  FCH_CARGA=${1}');
+    UTL_FILE.put_line(fich_salida_sh, '  FCH_DATOS=${1}');
+    UTL_FILE.put_line(fich_salida_sh, '  BAN_FORZADO=${2}');
+    UTL_FILE.put_line(fich_salida_sh, 'fi');
+    --UTL_FILE.put_line(fich_salida_sh, '# Comprobamos si el numero de parametros es el correcto');
+    --UTL_FILE.put_line(fich_salida_sh, 'if [ $# -ne 3 ] ; then');
+    --UTL_FILE.put_line(fich_salida_sh, '  SUBJECT="Numero de paramatros de entrada incorrecto. Uso: ${0} <fch_carga> <fch_datos> <forzado>"');
+    --UTL_FILE.put_line(fich_salida_sh, '  echo "${SUBJECT}"');        
+    --UTL_FILE.put_line(fich_salida_sh, '  exit 1');
+    --UTL_FILE.put_line(fich_salida_sh, 'fi');
+    --UTL_FILE.put_line(fich_salida_sh, '# Recogida de parametros');
+    --UTL_FILE.put_line(fich_salida_sh, 'FCH_CARGA=${1}');
+    --UTL_FILE.put_line(fich_salida_sh, 'FCH_DATOS=${2}');
+    ----UTL_FILE.put_line(fich_salida_sh, 'FCH_DATOS_DOS_DIGITOS=`echo ${FCH_DATOS} | awk ''{ printf "%s%s%s", substr($1,3,2), substr($1,5,2), substr($1,7,2) ; }''`');
+    ----UTL_FILE.put_line(fich_salida_sh, 'FCH_DATOS_DOS_DIGITOS=`echo ${FCH_DATOS} | awk ''{ printf "%s%s%s", substr($1,7,2), substr($1,5,2), substr($1,3,2) ; }''`');
+    --UTL_FILE.put_line(fich_salida_sh, 'BAN_FORZADO=${3}');    
     UTL_FILE.put_line(fich_salida_sh, 'FECHA_HORA=${FCH_DATOS}_$(date +%Y%m%d_%H%M%S)');
     UTL_FILE.put_line(fich_salida_sh, '# Comprobamos si existe el directorio de Trazas para fecha de datos');
     UTL_FILE.put_line(fich_salida_sh, 'if [ ! -d "${' || NAME_DM || '_TRAZAS}/${FCH_CARGA}" ] ; then');
@@ -423,26 +537,26 @@ BEGIN
     --UTL_FILE.put_line(fich_salida_sh, 'REQ_NUM="Req89208"');
     UTL_FILE.put_line(fich_salida_sh, 'INTERFAZ="' || 'load_stg_' || reg_summary.CONCEPT_NAME || '.sh"');
     UTL_FILE.put_line(fich_salida_sh, '');
-    UTL_FILE.put_line(fich_salida_sh, '################################################################################');
-    UTL_FILE.put_line(fich_salida_sh, '# Cuentas  Produccion / Desarrollo                                             #');
-    UTL_FILE.put_line(fich_salida_sh, '################################################################################');
-    UTL_FILE.put_line(fich_salida_sh, 'if [ "$(/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}'')" = "10.225.173.102" ]||[ "$(/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}'')" = "10.225.173.184" ]; then');
-    UTL_FILE.put_line(fich_salida_sh, '  ### Cuentas para mantenimiento');
-    UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
-    UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_Usuario_ReportesBI.txt)');
-    UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_ReportesBI.txt)');
-    UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_DWH=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TelefonosMantto.txt)');
-    UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
-    UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TELEFONOS_USUARIOS.txt)');
-    UTL_FILE.put_line(fich_salida_sh, 'else');
-    UTL_FILE.put_line(fich_salida_sh, '  ### Cuentas para mantenimiento');
-    UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
-    UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_Usuario_ReportesBI.txt)');
-    UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_ReportesBI.txt)');
-    UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_DWH=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TelefonosMantto.txt)');
-    UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
-    UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TELEFONOS_USUARIOS.txt)');
-    UTL_FILE.put_line(fich_salida_sh, 'fi');
+    --UTL_FILE.put_line(fich_salida_sh, '################################################################################');
+    --UTL_FILE.put_line(fich_salida_sh, '# Cuentas  Produccion / Desarrollo                                             #');
+    --UTL_FILE.put_line(fich_salida_sh, '################################################################################');
+    --UTL_FILE.put_line(fich_salida_sh, 'if [ "$(/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}'')" = "10.225.173.102" ]||[ "$(/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}'')" = "10.225.173.184" ]; then');
+    --UTL_FILE.put_line(fich_salida_sh, '  ### Cuentas para mantenimiento');
+    --UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
+    --UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_Usuario_ReportesBI.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_ReportesBI.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_DWH=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TelefonosMantto.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
+    --UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TELEFONOS_USUARIOS.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, 'else');
+    --UTL_FILE.put_line(fich_salida_sh, '  ### Cuentas para mantenimiento');
+    --UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
+    --UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_Usuario_ReportesBI.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL=$(cat "${' || NAME_DM || '_CONFIGURACION}"/Correos_Mtto_ReportesBI.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_DWH=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TelefonosMantto.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2034');
+    --UTL_FILE.put_line(fich_salida_sh, '  TELEFONOS_USUARIOS=$(cat "${' || NAME_DM || '_CONFIGURACION}"/TELEFONOS_USUARIOS.txt)');
+    --UTL_FILE.put_line(fich_salida_sh, 'fi');
     UTL_FILE.put_line(fich_salida_sh, 'ULT_PASO_EJECUTADO=$(');
     UTL_FILE.put_line(fich_salida_sh, '  psql -h "$HOST" -p "$PORT" -U "$BD_USUARIO" -d "$DB_NAME" -t --no-align -c "');
     UTL_FILE.put_line(fich_salida_sh, '  SELECT COALESCE(MAX(' || OWNER_MTDT || '.MTDT_MONITOREO.CVE_PASO), 0)');
@@ -565,7 +679,7 @@ BEGIN
       --UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS_T=$(echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/_/'')');
       /* (20180705) Angel Ruiz. NF. Limpieza de posibles lineas en blanco */
       UTL_FILE.put_line(fich_salida_sh, '  # Suprimimos posibles lineas en blanco y comillas dobles');
-      UTL_FILE.put_line(fich_salida_sh, '  sed -e ''/^ *$/d'' -e ''/"/d'' "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}" > "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}".tmp');
+      UTL_FILE.put_line(fich_salida_sh, '  sed -e ''/^ *$/d'' -e ''s/"//g'' "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}" > "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}".tmp');
       UTL_FILE.put_line(fich_salida_sh, '  mv "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}".tmp "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}"');
       /* (20180705) Angel Ruiz. FIN NF. Limpieza de posibles lineas en blanco */
       UTL_FILE.put_line(fich_salida_sh, '');
@@ -574,18 +688,16 @@ BEGIN
       /* (20160818) Angel Ruiz. NF: Puede existir una ruta alternativa para cargar fichero*/
       /* ya que por motivos de validacion se quiere cargar otro fichero */
       if (reg_summary.FILE_VALIDATION is null) then
-      /* Se carga el fichero normal */
-        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql:\/\/${BD_USUARIO}@${HOST}:${PORT}\/${DB_NAME}?sslmode=prefer/g" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE_NAME_ESCAPADO}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > ' || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
+        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql://${BD_USUARIO}@${HOST}:${PORT}/${DB_NAME}?sslmode=prefer" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
         UTL_FILE.put_line(fich_salida_sh, '  # Llamada a pgloader');
-        --UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"' || ' > "${' || NAME_DM || '_TRAZAS}/${NOMBRE_FICH_LDR_TRZ}"' || ' 2>&' || '1');
-        UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log' || ' 2>&' || '1'); 
-
+        UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/load_stg' || '_' || reg_summary.CONCEPT_NAME || '_"${FECHA_HORA}".log' || ' 2>&' || '1'); 
+        --UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero .load generado en vuelo.');
+        --UTL_FILE.put_line(fich_salida_sh, '  rm "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"');
       else
       /* Se carga el fichero alternativo para validacion */
-        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql:\/\/${BD_USUARIO}@${HOST}:${PORT}\/${DB_NAME}?sslmode=prefer/g" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE_NAME_ESCAPADO}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
+        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql://${BD_USUARIO}@${HOST}:${PORT}/${DB_NAME}?sslmode=prefer" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
         UTL_FILE.put_line(fich_salida_sh, '  # Llamada a pgloader');
-        --UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/${NOMBRE_FICH_LDR_TRZ}"' || ' 2>&' || '1'); 
-        UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log' || ' 2>&' || '1'); 
+        UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/load_stg' || '_' || reg_summary.CONCEPT_NAME || '_"${FECHA_HORA}".log' || ' 2>&' || '1'); 
       end if;
       UTL_FILE.put_line(fich_salida_sh, '');
       UTL_FILE.put_line(fich_salida_sh, '  err_salida=$?');
@@ -617,10 +729,28 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, 'done');
       /* (20150605) FIN */
     else
+      UTL_FILE.put_line(fich_salida_sh, '# Cargamos los ficheros');
       UTL_FILE.put_line(fich_salida_sh, 'TOT_LEIDOS=0');
       UTL_FILE.put_line(fich_salida_sh, 'TOT_INSERTADOS=0');
       UTL_FILE.put_line(fich_salida_sh, 'TOT_RECHAZADOS=0');
-      UTL_FILE.put_line(fich_salida_sh, '# Llamada a sqlldr');
+      UTL_FILE.put_line(fich_salida_sh, 'for FILE in ${NOMBRE_FICH_CARGA}');
+      UTL_FILE.put_line(fich_salida_sh, 'do');
+      UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS=$(basename "${FILE}")');
+      --UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_CTL=`basename ${FILE%.*}`.ctl');
+      UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2001');
+      UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_LDR=$(echo "${NOMBRE_FICH_DATOS}" | sed -e ''s/\.[Dd][Aa][Tt]/\.load/'')');
+      UTL_FILE.put_line(fich_salida_sh, '  # shellcheck disable=SC2001');
+      UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_LDR_TRZ=$(echo "${NOMBRE_FICH_DATOS}" | sed -e ''s/\.[Dd][Aa][Tt]/\.log/'')');
+      UTL_FILE.put_line(fich_salida_sh, '  FILE_NAME_ESCAPADO=$(echo "${FILE}" | sed ''s/\//\\\//g'')');
+      --UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS_T=$(echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/_/'')');
+      /* (20180705) Angel Ruiz. NF. Limpieza de posibles lineas en blanco */
+      UTL_FILE.put_line(fich_salida_sh, '  # Suprimimos posibles lineas en blanco y comillas dobles');
+      UTL_FILE.put_line(fich_salida_sh, '  sed -e ''/^ *$/d'' -e ''s/"//g'' "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}" > "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}".tmp');
+      UTL_FILE.put_line(fich_salida_sh, '  mv "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}".tmp "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/${NOMBRE_FICH_DATOS}"');
+      /* (20180705) Angel Ruiz. FIN NF. Limpieza de posibles lineas en blanco */
+      UTL_FILE.put_line(fich_salida_sh, '');
+      UTL_FILE.put_line(fich_salida_sh, '  echo "Fichero a cargar es: ${FILE}"' || ' >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');
+      --UTL_FILE.put_line(fich_salida_sh, '  cat ${' || NAME_DM || '_CTL}/ctl_sa_' || reg_summary.CONCEPT_NAME || '.ctl | sed "s/MY_FILE/${NOMBRE_FICH_DATOS}/g" > ' || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
       /* (20160818) Angel Ruiz. NF: Puede existir una ruta alternativa para cargar fichero*/
       /* ya que por motivos de validacion se quiere cargar otro fichero */
       if (reg_summary.FILE_VALIDATION is null) then
@@ -628,36 +758,42 @@ BEGIN
         UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql://${BD_USUARIO}@${HOST}:${PORT}/${DB_NAME}?sslmode=prefer" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
         UTL_FILE.put_line(fich_salida_sh, '  # Llamada a pgloader');
         UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/load_stg' || '_' || reg_summary.CONCEPT_NAME || '_"${FECHA_HORA}".log' || ' 2>&' || '1'); 
-        UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero .load generado en vuelo.');
-        UTL_FILE.put_line(fich_salida_sh, '  rm "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"');
+        --UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero .load generado en vuelo.');
+        --UTL_FILE.put_line(fich_salida_sh, '  rm "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"');
       else
       /* Se carga el fichero alternativo para validacion */
         UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql://${BD_USUARIO}@${HOST}:${PORT}/${DB_NAME}?sslmode=prefer" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
         UTL_FILE.put_line(fich_salida_sh, '  # Llamada a pgloader');
         UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/load_stg' || '_' || reg_summary.CONCEPT_NAME || '_"${FECHA_HORA}".log' || ' 2>&' || '1'); 
-        UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero .load generado en vuelo.');
-        UTL_FILE.put_line(fich_salida_sh, '  rm "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
       end if;
       UTL_FILE.put_line(fich_salida_sh, '');
-      UTL_FILE.put_line(fich_salida_sh, 'err_salida=$?');
+      UTL_FILE.put_line(fich_salida_sh, '  err_salida=$?');
       UTL_FILE.put_line(fich_salida_sh, '');
-      UTL_FILE.put_line(fich_salida_sh, 'if [ ${err_salida} -ne 0 ]; then');
-      UTL_FILE.put_line(fich_salida_sh, '  SUBJECT="${INTERFAZ}: Surgio un error en el sqlloader en la carga de la tabla de staging ' || 'SA_' || reg_summary.CONCEPT_NAME || '. Error:  ${err_salida}."');
-      UTL_FILE.put_line(fich_salida_sh, '  ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
-      UTL_FILE.put_line(fich_salida_sh, '  echo "${SUBJECT}" >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');    
-      UTL_FILE.put_line(fich_salida_sh, '  echo date >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');
-      UTL_FILE.put_line(fich_salida_sh, '  InsertaFinFallido');
-      UTL_FILE.put_line(fich_salida_sh, '  exit 1');    
-      UTL_FILE.put_line(fich_salida_sh, 'fi');    
+      UTL_FILE.put_line(fich_salida_sh, '  if [ ${err_salida} -ne 0 ]; then');
+      UTL_FILE.put_line(fich_salida_sh, '    SUBJECT="${INTERFAZ}: Surgio un error en el pgloader en la carga de la tabla de staging ' || 'sah_' || reg_summary.CONCEPT_NAME || '. Error:  ${err_salida}."');
+      UTL_FILE.put_line(fich_salida_sh, '    ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
+      UTL_FILE.put_line(fich_salida_sh, '    echo "${SUBJECT}" >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');    
+      UTL_FILE.put_line(fich_salida_sh, '    echo date >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');
+      UTL_FILE.put_line(fich_salida_sh, '    #Borramos el fichero ctl generado en vuelo.');
+      UTL_FILE.put_line(fich_salida_sh, '    rm "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"');
+      UTL_FILE.put_line(fich_salida_sh, '    InsertaFinFallido');
+      UTL_FILE.put_line(fich_salida_sh, '    echo "El proceso ha acabado con error." >> ' || '"${' || NAME_DM || '_TRAZAS}"/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_"${FECHA_HORA}".log');      
+      UTL_FILE.put_line(fich_salida_sh, '    exit 1');    
+      UTL_FILE.put_line(fich_salida_sh, '  fi');    
       UTL_FILE.put_line(fich_salida_sh, '');
-      UTL_FILE.put_line(fich_salida_sh, 'REG_RECHAZADOS=$(grep "Total import time" ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log | awk -F'' '' '' { printf "%d",$4 } '')');
-      UTL_FILE.put_line(fich_salida_sh, 'REG_RECHAZADOS=$((REG_RECHAZADOS/2)) # Se divide por 2 porque por alguna razón es el doble.');
-      UTL_FILE.put_line(fich_salida_sh, 'REG_INSERTADOS=$(grep "Total import time" ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log | awk -F'' '' '' { printf "%d",$4 } '')');
-      UTL_FILE.put_line(fich_salida_sh, 'REG_LEIDOS=$((REG_INSERTADOS+REG_RECHAZADOS))');
-      UTL_FILE.put_line(fich_salida_sh, 'TOT_LEIDOS=$((TOT_LEIDOS + REG_LEIDOS))');
-      UTL_FILE.put_line(fich_salida_sh, 'TOT_INSERTADOS=$((TOT_INSERTADOS + REG_INSERTADOS))');
-      UTL_FILE.put_line(fich_salida_sh, 'TOT_RECHAZADOS=$((TOT_RECHAZADOS} + REG_RECHAZADOS))');
+      UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero .load generado en vuelo.');
+      UTL_FILE.put_line(fich_salida_sh, '  rm "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
       UTL_FILE.put_line(fich_salida_sh, '');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=$(grep "Total import time" ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log | awk -F'' '' '' { printf "%d",$4 } '')');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=$((REG_RECHAZADOS/2)) # Se divide por 2 porque por alguna razón es el doble.');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_INSERTADOS=$(grep "Total import time" ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log | awk -F'' '' '' { printf "%d",$4 } '')');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_LEIDOS=$((REG_INSERTADOS+REG_RECHAZADOS))');
+      UTL_FILE.put_line(fich_salida_sh, '  TOT_LEIDOS=$((TOT_LEIDOS + REG_LEIDOS))');
+      UTL_FILE.put_line(fich_salida_sh, '  TOT_INSERTADOS=$((TOT_INSERTADOS + REG_INSERTADOS))');
+      UTL_FILE.put_line(fich_salida_sh, '  TOT_RECHAZADOS=$((TOT_RECHAZADOS} + REG_RECHAZADOS))');
+      UTL_FILE.put_line(fich_salida_sh, '');
+
+      UTL_FILE.put_line(fich_salida_sh, 'done');
     end if;
     /*(20160715) Angel Ruiz. Nueva Funcionalidad.*/
     UTL_FILE.put_line(fich_salida_sh, '# shellcheck disable=SC2129');
@@ -677,7 +813,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '  exit 1');
     UTL_FILE.put_line(fich_salida_sh, 'fi');
     UTL_FILE.put_line(fich_salida_sh, '');
-    UTL_FILE.put_line(fich_salida_sh, '# Movemos el fichero cargado a /' || NAME_DM || '/MEX/DESTINO');    
+    UTL_FILE.put_line(fich_salida_sh, '# Movemos el fichero cargado a /' || NAME_DM || '/' || PAIS || '/DESTINO');    
     UTL_FILE.put_line(fich_salida_sh, 'if [ ! -d "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}" ] ; then');
     UTL_FILE.put_line(fich_salida_sh, '  mkdir "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}"');
     UTL_FILE.put_line(fich_salida_sh, 'fi');
@@ -686,15 +822,25 @@ BEGIN
     if (reg_summary.FILE_VALIDATION is null) then
       /* (20160712) Angel Ruiz. CAMBIO TEMPORAL ... */
       UTL_FILE.put_line(fich_salida_sh, '# shellcheck disable=SC2129');
-      UTL_FILE.put_line(fich_salida_sh, 'mv "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_interface_a_cargar || '" "${' || NAME_DM || '_DESTINO}/${FCH_DATOS}" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');    
-      UTL_FILE.put_line(fich_salida_sh, 'mv "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_flag_a_cargar || '" "${' || NAME_DM || '_DESTINO}/${FCH_DATOS}" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');    
+      UTL_FILE.put_line(fich_salida_sh, 'mv "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_interface_a_cargar || '" "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');    
+      UTL_FILE.put_line(fich_salida_sh, 'mv "${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_flag_a_cargar || '" "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'echo "Comprimiendo el fichero de datos en el directorio destino..."  >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');
+      UTL_FILE.put_line(fich_salida_sh, 'pigz -f "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_interface_a_cargar || '" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'chmod 770 "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_flag_a_cargar || '" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'chgrp ana "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_interface_a_cargar || '.gz" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'chmod 770 "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_interface_a_cargar || '.gz" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
       /* (20160712) Angel Ruiz. FIN CAMBIO TEMPORAL*/
     else
       UTL_FILE.put_line(fich_salida_sh, '# shellcheck disable=SC2129');
       UTL_FILE.put_line(fich_salida_sh, 'mv ' || nombre_interface_a_cargar || ' "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');    
-      UTL_FILE.put_line(fich_salida_sh, 'mv ' || nombre_flag_a_cargar || ' "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');    
+      UTL_FILE.put_line(fich_salida_sh, 'mv ' || nombre_flag_a_cargar || ' "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'echo "Comprimiendo el fichero de datos en el directorio destino..."  >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');      
+      UTL_FILE.put_line(fich_salida_sh, 'pigz -f "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_interface_a_cargar || '" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'chmod 770 "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_flag_a_cargar || '" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'chgrp ana "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_interface_a_cargar || '.gz" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, 'chmod 770 "${' || NAME_DM || '_DESTINO}/${FCH_CARGA}/' || nombre_interface_a_cargar || '.gz" >> "${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log ' || '2>&' || '1');
     end if;
-    UTL_FILE.put_line(fich_salida_sh, 'echo "La carga de la tabla ' ||  'sah_' || reg_summary.CONCEPT_NAME || ' se ha realizado correctamente." >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');
+    UTL_FILE.put_line(fich_salida_sh, 'echo "La carga de la tabla ' ||  'sth_' || reg_summary.CONCEPT_NAME || ' se ha realizado correctamente: $(date +%Y%m%d_%H%M%S)." >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log');
     UTL_FILE.put_line(fich_salida_sh, 'exit 0');    
     /******/
     /* FIN DE LA GENERACION DEL sh de CARGA */

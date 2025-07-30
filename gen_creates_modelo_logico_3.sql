@@ -16,7 +16,8 @@ DECLARE
       TRIM(TABLE_NAME) "TABLE_NAME",
       TRIM(TABLESPACE) "TABLESPACE",
       TRIM(CI) "CI",
-      TRIM(PARTICIONADO) "PARTICIONADO"
+      TRIM(PARTICIONADO) "PARTICIONADO",
+      trim(DISTRIBUTION_COL) "DISTRIBUTION_COL"
     FROM MTDT_MODELO_SUMMARY
     WHERE TRIM(CI) <> 'P' and /* Las que poseen un valor "P" en esta columna son las tablas de PERMITED_VALUES, por lo que no hya que generar su modelo */
     SUBSTR(TRIM(TABLE_NAME), 1, 4) <> 'TRN_'  /* Las tablas de transformación no se generan */
@@ -120,15 +121,15 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 OR INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL' || ' NOT NULL');
                 else
                   if ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F')  and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                     else
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
@@ -231,15 +232,15 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0 or INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DECIMAL') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL' || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL' || ' NOT NULL');
                 else              
                   if ((r_mtdt_modelo_logico_TABLA.CI = 'I' or r_mtdt_modelo_logico_TABLA.CI = 'F')  and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                     else
                       --DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'SERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGSERIAL ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'FCT_DT_KEY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
@@ -419,14 +420,14 @@ BEGIN
             END IF;
           end loop;
         end if;
-      ELSE
+      --ELSE
         /* No hay PK definida en la especificación */
         /* Tenemos que mirar si hay un campo de particionado */
-        IF v_tipo_particionado != 'S' THEN
-          /* La tabla esta particionada */
-          DBMS_OUTPUT.put_line(',' || ' PRIMARY KEY (');
-          DBMS_OUTPUT.put_line(v_nombre_campo_particionado || ')');
-        END IF;
+        --IF v_tipo_particionado != 'S' THEN
+        --  /* La tabla esta particionada */
+        --  DBMS_OUTPUT.put_line(',' || ' PRIMARY KEY (');
+        --  DBMS_OUTPUT.put_line(v_nombre_campo_particionado || ')');
+        --END IF;
       END IF;
       DBMS_OUTPUT.put_line(')');  /* Parentesis final del create */
       if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0)
@@ -501,7 +502,14 @@ BEGIN
       if ((regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')), '^?+D_',1,'i') >0)
         or (regexp_count(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '^?+_DIM',1,'i') >0)
       )  then  /* Se trata de una dimension  */
-        DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ''');');
+        DBMS_OUTPUT.put_line ('SELECT create_reference_table(''' || lower(OWNER_DWH) || '.' || lower(r_mtdt_modelo_logico_TABLA.TABLE_NAME) || ''');');
+      else
+        /* Se trata de una tabla de hechos */
+        /* (20250728) Angel Ruiz. Modifico para distribuir las tablas de hechos */
+        /* aquellas que tienen un campo de distribución */
+        if (r_mtdt_modelo_logico_TABLA.DISTRIBUTION_COL is not null) then
+          DBMS_OUTPUT.put_line ('SELECT create_distributed_table(''' || lower(OWNER_DWH) || '.' || lower(trim(r_mtdt_modelo_logico_TABLA.TABLE_NAME)) || ''', ''' || lower(r_mtdt_modelo_logico_TABLA.DISTRIBUTION_COL) || ''');');
+        end if;
       end if;
       /* (20250124) Angel Ruiz. Fin */
       --DBMS_OUTPUT.put_line(';');

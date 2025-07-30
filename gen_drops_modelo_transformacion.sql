@@ -8,7 +8,8 @@ DECLARE
         FROM MTDT_MODELO_SUMMARY
         WHERE TRIM(CI) <> 'P' and   /* Las que poseen un valor "P" en esta columna son las tablas de PERMITED_VALUES, por lo que no hya que generar su modelo */
         SUBSTR(TRIM(TABLE_NAME), 1, 4) = 'TRN_'  /* Las tablas de transformación no se generan */
-        and trim(TABLE_NAME) in (   /* (20250224)SP1*/
+        and trim(TABLE_NAME) in (
+          /* (20250224)SP1*/
           'TRN_PDUSG_SUBSCRIBER_DIM'
           ,'TRN_PDUSG_ACCOUNT_DIM'
           ,'TRN_SALES_CNL_DIM'
@@ -35,6 +36,46 @@ DECLARE
           ,'TRN_SALES_RTLR_DIM'
           ,'TRN_INSEC_BTCH_DIM'
           ,'TRN_PDUSG_MVMT_SUBS_FCT'
+          --, 'AR_MVMT_FCT'
+          --, 'AR_TRCKNG_FCT'
+          , 'TRN_PDUSG_MVMT_SUBS_FCT' -- se suprimio
+          -------------------------
+          -- SP2
+          --,'BRCKT_DIM'
+          --,'COLL_PYMT_TP_DIM'
+          --,'CSTMR_DOC_FCT'
+          --,'CSTMR_DOC_ST_DIM'
+          --,'CSTMR_DOC_TP_DIM'
+          --,'CSTMR_INV_DTL_FCT'
+          --,'CSTMR_INV_FCT'
+          --,'CSTMR_INV_ST_DIM'
+          --,'CSTMR_PNDG_DOC_FCT'
+          --,'INV_ITM_DIM'
+          --,'INV_PRD_DIM'
+          --,'INV_TP_DIM'
+          --,'RCR_TP_DIM'
+          ,'TRN_PDUSG_INV_PRD_DIM'
+          ,'TRN_PDUSG_INV_ITM_DIM'
+          ,'TRN_PDUSG_CSTMR_DOC_FCT'
+          ,'TRN_PDUSG_CSTMR_INV_DTL_FCT'
+          ,'TRN_PDUSG_CSTMR_INV_FCT'
+          ,'TRN_PDUSG_CSTMR_PNDG_DOC_FCT'
+          ,'TRN_PDUSG_CSTMR_COLLECT_FCT'
+          -------------------------
+          -- SP3
+        --, 'HH_DIM'
+        --, 'BNDL_DIM'
+        --, 'HH_MVMT_FCT'
+        --, 'HH_TRCKNG_FCT'
+        , 'TRN_CSTMR_HH_DIM'
+        ----------------------------
+        -- SP4
+        --, 'PRVN_SVC_TRCKNG_FCT'
+        --, 'PRVN_SVC_AR_DIM'
+        --, 'SVC_AR_DIM'
+        , 'TRN_PDUSG_SVC_AR_DIM'
+        , 'TRN_PDUSG_PRVN_SVC_AR_DIM'
+        , 'TRN_PDUSG_PRVN_SVC_TRCKNG_FCT'
         )
         ;
     

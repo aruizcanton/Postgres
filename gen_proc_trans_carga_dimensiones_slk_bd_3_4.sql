@@ -3286,7 +3286,7 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, 'returns integer as $$');
           UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
           UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INTEGER := 0;');
-          UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+          UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
@@ -3572,7 +3572,7 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');
           UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
           UTL_FILE.put_line(fich_salida_pkg, '  num_filas_upd INTEGER := 0;');
-          UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+          UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
           UTL_FILE.put_line(fich_salida_pkg, '');
@@ -3776,7 +3776,7 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');
           UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
           UTL_FILE.put_line(fich_salida_pkg, '  num_filas_hst INTEGER := 0;');
-          UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+          UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
           UTL_FILE.put_line(fich_salida_pkg, '');
@@ -3992,7 +3992,7 @@ begin
             UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');            
             UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
             UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INTEGER := 0;');
-            UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+            UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
             UTL_FILE.put_line(fich_salida_pkg, '');
@@ -4121,7 +4121,7 @@ begin
             UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');            
             UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
             UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INTEGER := 0;');
-            UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+            UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
             UTL_FILE.put_line(fich_salida_pkg, '');
@@ -4247,7 +4247,7 @@ begin
             UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');
             UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
             UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas integer := 0;');
-            UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := clock_timestamp();');
+            UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
             UTL_FILE.put_line(fich_salida_pkg, '');
@@ -4398,7 +4398,7 @@ begin
       end if;      
       /* (20250306) Ange Ruiz. -f */
       UTL_FILE.put_line(fich_salida_pkg, '  siguiente_paso_a_ejecutar integer;');
-      UTL_FILE.put_line(fich_salida_pkg, '  inicio_paso_tmr TIMESTAMP := clock_timestamp();');
+      UTL_FILE.put_line(fich_salida_pkg, '  inicio_paso_tmr TIMESTAMP := current_timestamp;');
       UTL_FILE.put_line(fich_salida_pkg, '  num_reg integer;');
       UTL_FILE.put_line(fich_salida_pkg, '  msg TEXT;');
       UTL_FILE.put_line(fich_salida_pkg, '  errno TEXT;');
@@ -4584,7 +4584,7 @@ begin
         --UTL_FILE.put_line(fich_salida_pkg, '  end if;');
         UTL_FILE.put_line(fich_salida_pkg, '  elsif (siguiente_paso_a_ejecutar = 2) then');
         UTL_FILE.put_line(fich_salida_pkg, '    /* comienza el segundo paso */');
-        UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := clock_timestamp();');
+        UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := current_timestamp;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Comienza el segundo paso'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor timestamp del inicio del paso es: %.'', inicio_paso_tmr;');        
         UTL_FILE.put_line(fich_salida_pkg, '    INSERT');

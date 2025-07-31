@@ -3094,8 +3094,8 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '-- ### INICIO DEL SCRIPT');
     UTL_FILE.put_line(fich_salida_pkg, '');
     /* (20250731) Ángel Ruiz. Genero los dos procedures necesarios para la gestión de las particiones */
-    UTL_FILE.put_line(fich_salida_pkg, 'drop PROCEDURE ' || OWNER_TC || '.proc_' || nombre_proceso || '_crear_particiones;');
-    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_TC || '.proc_' || nombre_proceso || '_crear_particiones (p_cve_dia varchar(8))');
+    UTL_FILE.put_line(fich_salida_pkg, 'drop PROCEDURE ' || OWNER_TC || '.prc_' || nombre_proceso || '_crear_particiones;');
+    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_TC || '.prc_' || nombre_proceso || '_crear_particiones (p_cve_dia varchar(8))');
     UTL_FILE.put_line(fich_salida_pkg, 'LANGUAGE plpgsql');
     UTL_FILE.put_line(fich_salida_pkg, 'AS $$');
     UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
@@ -3136,6 +3136,39 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, 'END;');
     UTL_FILE.put_line(fich_salida_pkg, '$$;');
     UTL_FILE.put_line(fich_salida_pkg, '');
+    UTL_FILE.put_line(fich_salida_pkg, 'drop PROCEDURE ' || OWNER_TC || '.prc_' || nombre_proceso || '_truncar_particiones;');
+    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_TC || '.prc_' || nombre_proceso || '_truncar_particiones (p_cve_dia INTEGER)');
+    UTL_FILE.put_line(fich_salida_pkg, 'LANGUAGE plpgsql');
+    UTL_FILE.put_line(fich_salida_pkg, 'AS $$');
+    UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
+    UTL_FILE.put_line(fich_salida_pkg, '  v_fct_dt_key BIGINT;');
+    UTL_FILE.put_line(fich_salida_pkg, '  v_partition_name TEXT;');
+    UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
+    UTL_FILE.put_line(fich_salida_pkg, '    -- Lógica para truncar particiones');
+    UTL_FILE.put_line(fich_salida_pkg, '    FOR v_fct_dt_key IN');
+    UTL_FILE.put_line(fich_salida_pkg, '        SELECT DISTINCT TO_CHAR(FCT_DT, ''YYYYMMDD'')::BIGINT');
+    UTL_FILE.put_line(fich_salida_pkg, '        FROM ' || lower(OWNER_TC) || '.trn_pdusg_' || lower(nombre_proceso));
+    UTL_FILE.put_line(fich_salida_pkg, '        WHERE CVE_DIA = p_cve_dia');
+    UTL_FILE.put_line(fich_salida_pkg, '        ORDER BY 1');
+    UTL_FILE.put_line(fich_salida_pkg, '    LOOP');
+    UTL_FILE.put_line(fich_salida_pkg, '        v_partition_name := format(''' || lower(nombre_proceso) || '_%s'', v_fct_dt_key);');
+    UTL_FILE.put_line(fich_salida_pkg, '        -- Verificar si la partición existe');
+    UTL_FILE.put_line(fich_salida_pkg, '        IF EXISTS (');
+    UTL_FILE.put_line(fich_salida_pkg, '            SELECT 1');
+    UTL_FILE.put_line(fich_salida_pkg, '            FROM pg_inherits');
+    UTL_FILE.put_line(fich_salida_pkg, '            JOIN pg_class parent ON pg_inherits.inhparent = parent.oid');
+    UTL_FILE.put_line(fich_salida_pkg, '            JOIN pg_class child ON pg_inherits.inhrelid = child.oid');
+    UTL_FILE.put_line(fich_salida_pkg, '            WHERE parent.relname = ''' || lower(nombre_proceso) || '''');
+    UTL_FILE.put_line(fich_salida_pkg, '                AND child.relname = v_partition_name');
+    UTL_FILE.put_line(fich_salida_pkg, '        ) THEN');
+    UTL_FILE.put_line(fich_salida_pkg, '            RAISE NOTICE ''%. Truncando de la partición: %'', to_char(clock_timestamp(), ''YYYY-MM-DD HH24:MI:SS''), v_partition_name;');
+    UTL_FILE.put_line(fich_salida_pkg, '            EXECUTE format(''TRUNCATE TABLE ' || lower(OWNER_TC) || '.%I'', v_partition_name);');
+    UTL_FILE.put_line(fich_salida_pkg, '        ELSE');
+    UTL_FILE.put_line(fich_salida_pkg, '            RAISE NOTICE ''%. La partición no existe: %, no se trunca'', to_char(clock_timestamp(), ''YYYY-MM-DD HH24:MI:SS''), v_partition_name;');
+    UTL_FILE.put_line(fich_salida_pkg, '        END IF;');
+    UTL_FILE.put_line(fich_salida_pkg, '    END LOOP;');
+    UTL_FILE.put_line(fich_salida_pkg, 'END;');
+    UTL_FILE.put_line(fich_salida_pkg, '$$;');
     /* Tercero genero los cuerpos de los metodos que implementan los escenarios */
     open MTDT_SCENARIO (reg_tabla.TABLE_NAME);
     loop
@@ -3444,8 +3477,16 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '  if (siguiente_paso_a_ejecutar = 1) then');
     UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := current_timestamp;');
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El valor del timestamp de inicio de paso es: %.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), inicio_paso_tmr;');
-    --UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
-    --UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_TC || '.T_' || nombre_tabla_reducido || ';');
+    UTL_FILE.put_line(fich_salida_pkg, '');
+    UTL_FILE.put_line(fich_salida_pkg, '    -- 20250714 (Angel Ruiz). Cambio hecho a petición de Luisfer. Se truncan las particiones siempre.');
+    UTL_FILE.put_line(fich_salida_pkg, '    -- Trunco las particiones siempre, porque hay que sustituir la información');
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Se procede a truncar todas las particiones para la fecha de carga: %'', to_char(clock_timestamp(), ''YYYY-MM-DD HH24:MI:SS''), fch_carga_in;');
+    UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.prc_' || nombre_proceso || '_truncar_particiones(fch_carga_in :: integer);');
+    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de truncar las particiones.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+    UTL_FILE.put_line(fich_salida_pkg, '    -- Creo las particiones necesarias según los días de fecha de datos que se han cargado para la fecha de carga que se lanza.');
+    UTL_FILE.put_line(fich_salida_pkg, '    -- Se mira en la tabla trn_pdusg_' || nombre_proceso || 'para la fecha de carga los diferentes valores del campo FCT_DT.');
+    UTL_FILE.put_line(fich_salida_pkg, '    -- Se creará una partición en caso de ser necesario para cada uno de esos valores del campo FCT_DT.');
+    UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.prc_' || nombre_proceso || '_crear_particiones(fch_carga_in :: integer);');
     /* (20200409) Angel Ruiz. NF. Tengo en cuenta el particionado Semanal para calcular la particion q he de crear */
     OPEN c_mtdt_modelo_logico_COLUMNA (reg_tabla.TABLE_NAME);
     v_tipo_particionado := 'S';  /* (20150821) Angel Ruiz. Por defecto la tabla no estara particionada */
@@ -3508,74 +3549,6 @@ begin
       end if;
     END LOOP;
     CLOSE c_mtdt_modelo_logico_COLUMNA;
-    /* (20200409) Angel Ruiz. Fin NF: Tengo en cuenta el particionado Semanal para calcular la particion q he de crear  */
-    /* (20200409) Angel Ruiz. NF: Tengo en cuenta el particionado Semanal para calcular la particion q he de crear*/
-    if (v_tipo_particionado = 'D') then
-      /* Hablamos de un particionado normal diario */
-      /* Elijo la opción de siempre borrar y crear la partición en lugar de consultar si existe la misma */
-      UTL_FILE.put_line(fich_salida_pkg,'    /* Gestiono la partición en la que se van a insertar los nuevos registros */');
-      UTL_FILE.put_line(fich_salida_pkg,'    /* Crearé una nueva tabla que después la añadiré como partición a la tabla particionada ' || reg_tabla.TABLE_NAME || ' */');
-      /* (20250320). Angel Ruiz . -i */
-      /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-      /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-      /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-      if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-        UTL_FILE.put_line(fich_salida_pkg,'    drop table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T;');
-        UTL_FILE.put_line(fich_salida_pkg,'    create table if not exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T (like ' || OWNER_DM || '.' || reg_tabla.TABLE_NAME || ' INCLUDING DEFAULTS INCLUDING CONSTRAINTS);');
-      else
-        UTL_FILE.put_line(fich_salida_pkg,'    drop table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T;');
-        UTL_FILE.put_line(fich_salida_pkg,'    create table if not exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T (like ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' INCLUDING DEFAULTS INCLUDING CONSTRAINTS);');
-      end if;
-      if v_CVE_DIA_es_col = 1 THEN
-        UTL_FILE.put_line(fich_salida_pkg,'    v_fch_particion := to_char(to_date(fch_datos_in, ''YYYYMMDD'') + INTERVAL ''1 day'', ''YYYYMMDD'');');
-        /* (20250320). Angel Ruiz . -i */
-        /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-        /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-        /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-        --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T add constraint ' || reg_tabla.TABLE_NAME || '_' || ''' || fch_datos_in || ''_'' || v_fch_particion || '' CHECK (CVE_DIA >= '' || fch_datos_in || '' AND CVE_DIA < '' || v_fch_particion || '')'';');
-        if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-          UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T add constraint ' || reg_tabla.TABLE_NAME || '_' || ''' || fch_datos_in || ''_'' || v_fch_particion || '' CHECK (CVE_DIA >= '' || fch_datos_in || '' AND CVE_DIA < '' || v_fch_particion || '')'';');
-        else
-          UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T add constraint ' || reg_tabla.TABLE_NAME || '_' || ''' || fch_datos_in || ''_'' || v_fch_particion || '' CHECK (CVE_DIA >= '' || fch_datos_in || '' AND CVE_DIA < '' || v_fch_particion || '')'';');
-        end if;
-      else
-        UTL_FILE.put_line(fich_salida_pkg,'    v_fch_particion := to_char(to_date(fch_datos_in, ''YYYYMMDD'') + INTERVAL ''1 day'', ''YYYYMMDD'');');
-        /* (20250320). Angel Ruiz . -i */
-        /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-        /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-        /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-        --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T add constraint ' || reg_tabla.TABLE_NAME || '_' || ''' || fch_datos_in || ''_'' || v_fch_particion || '' CHECK (FCT_DT_KEY >= '' || fch_datos_in || '' AND FCT_DT_KEY < '' || v_fch_particion || '')'';');
-        if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-          UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T add constraint ' || reg_tabla.TABLE_NAME || '_' || ''' || fch_datos_in || ''_'' || v_fch_particion || '' CHECK (FCT_DT_KEY >= '' || fch_datos_in || '' AND FCT_DT_KEY < '' || v_fch_particion || '')'';');
-        else
-          UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T add constraint ' || reg_tabla.TABLE_NAME || '_' || ''' || fch_datos_in || ''_'' || v_fch_particion || '' CHECK (FCT_DT_KEY >= '' || fch_datos_in || '' AND FCT_DT_KEY < '' || v_fch_particion || '')'';');
-        end if;
-      end if;
-    end if;
-
-    if (v_tipo_particionado = 'W') then
-    /* Hablamos de un particionado semanal */
-      /* Elijo la opción de siempre borrar y crear la partición en lugar de consultar si existe la misma */
-      /* (20250320). Angel Ruiz . -i */
-      /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-      /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-      /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-      if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-        UTL_FILE.put_line(fich_salida_pkg,'    /* Gestiono la partición en la que se van a insertar los nuevos registros */');
-        UTL_FILE.put_line(fich_salida_pkg,'    /* Crearé una nueva tabla que después la añadiré como partición a la tabla particionada ' || reg_tabla.TABLE_NAME || ' */');
-        UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''drop table if exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ''';');
-        UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.T_' || reg_tabla.TABLE_NAME || ' (like ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' INCLUDING DEFAULTS INCLUDING CONSTRAINTS)'';');
-      else
-        UTL_FILE.put_line(fich_salida_pkg,'    /* Gestiono la partición en la que se van a insertar los nuevos registros */');
-        UTL_FILE.put_line(fich_salida_pkg,'    /* Crearé una nueva tabla que después la añadiré como partición a la tabla particionada ' || reg_tabla.TABLE_NAME || ' */');
-        UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''drop table if exists ' || OWNER_RD || '.T_' || reg_tabla.TABLE_NAME || ''';');
-        UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_RD || '.T_' || reg_tabla.TABLE_NAME || ' (like ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' INCLUDING DEFAULTS INCLUDING CONSTRAINTS)'';');
-      end if;
-      /* (20250320). Angel Ruiz . -f */
-      --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''drop table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in;');
-      --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE ''create table if not exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in || '' ( like '' || ''' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || '' including defaults including constraints)'';');
-    end if;
-    /* (20200409) Angel Ruiz. NF FIN: Tengo en cuenta el particionado Semanal para calcular la particion q he de crear*/
     
     UTL_FILE.put_line(fich_salida_pkg, '');
     
@@ -3616,59 +3589,15 @@ begin
       /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
       /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
       if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_TC) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
         UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
       else
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
         UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-      end if;
-      /* (20250320). Angel Ruiz . -f */
-    end if;
-    if (v_tipo_particionado = 'W') then
-      /* Se trata de particionamiento semanal */
-      --UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%u'');');
-      --UTL_FILE.put_line(fich_salida_pkg, '    v_fch_particion := to_char(to_date(fch_datos_in, ''YYYYMMDD'') - INTERVAL  ''1 day'', ''IYYYIW'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor de v_fch_particion es: %'', v_fch_particion;');
-      UTL_FILE.put_line(fich_salida_pkg, '    v_fch_datos = to_char(to_date(fch_datos_in, ''%Y%m%d''), ''IYYYIW'');');
-      UTL_FILE.put_line(fich_salida_pkg, '');
-      /* (20250320). Angel Ruiz . -i */
-      /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-      /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-      /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-      if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
-      else
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
       end if;
       /* (20250320). Angel Ruiz . -f */
     end if;
@@ -3678,101 +3607,6 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El segundo paso ha terminado correctamente.'';');
     UTL_FILE.put_line(fich_salida_pkg, '    --commit;');
     --UTL_FILE.put_line(fich_salida_pkg, '  end if;');
-    UTL_FILE.put_line(fich_salida_pkg, '  elsif (siguiente_paso_a_ejecutar = 2) then');
-
-    UTL_FILE.put_line(fich_salida_pkg, '    /* Comienza el segundo paso */');
-    UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := clock_timestamp();');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Comienza el segundo paso'';');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El timestamp del comienzo del paso es: %'', inicio_paso_tmr;');    
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Inicio del proceso de EXCHANGE: ' || OWNER_TC || '.prc_' || nombre_proceso || ''';');
-    /* (20250320). Angel Ruiz . -i */
-    /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-    /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-    /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-    if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-        UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T;');
-    else
-        UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T;');
-    end if;
-    /* (20250320). Angel Ruiz . -f */    
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El numero de registros final que se van a intercambiar es: %'', num_reg;');        
-    /* (20200409) Angel Ruiz. NF: Tengo en cuenta el particionado */
-    if (v_tipo_particionado = 'D') then
-      /* Se trata de particionamiento diario */
-      UTL_FILE.put_line(fich_salida_pkg, '    v_fch_particion := to_char(to_date(fch_datos_in, ''YYYYMMDD'') + INTERVAL ''1 day'', ''YYYYMMDD'');');
-      UTL_FILE.put_line(fich_salida_pkg, '');
-      /* (20250320). Angel Ruiz . -i */
-      /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-      /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-      /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-      if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_TC) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''% Purgado de particiones obsoletas finalizado.'',to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-      else
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del rename'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del attach'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ''' || ''_'' || fch_datos_in || '' drop constraint ' ||  reg_tabla.TABLE_NAME || '_'' || fch_datos_in || ''_'' || v_fch_particion;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después del drop constraint'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Ejecutando truncate_local_data_after_distributing_table...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    sql := format(''SELECT truncate_local_data_after_distributing_table(%L)'',''' || lower(OWNER_RD) || '.' || lower(reg_tabla.TABLE_NAME) || '_'' || fch_datos_in);');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Después de ejecutar: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), sql;');
-        UTL_FILE.put_line(fich_salida_pkg, '    -- Purgado de particiones antiguas');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgando las particiones obsoletas...'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    call raw.prc_adm_clean_anl_partitions (''' || lower(reg_tabla.TABLE_NAME) || ''');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Purgado de particiones obsoletas finalizado.'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-      end if;
-    end if;
-    if (v_tipo_particionado = 'W') then
-      /* Se trata de particionamiento semanal */
-      --UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%u'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    v_fch_particion := to_char(to_date(fch_datos_in, ''YYYYMMDD'') - INTERVAL  ''1 day'', ''IYYYIW'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor de v_fch_particion es: %'', v_fch_particion;');
-      UTL_FILE.put_line(fich_salida_pkg, '    v_fch_datos = to_char(to_date(fch_datos_in, ''%Y%m%d''), ''IYYYIW'');');
-      UTL_FILE.put_line(fich_salida_pkg, '');
-      /* (20250320). Angel Ruiz . -i */
-      /* Veo que hay tablas DE HECHOS que están también en el esquema de transformación */
-      /* por lo que tengo que detectar cuando comienzan por TRN_ y cuando no */
-      /* Si comienzan por TRN_ son del esquema de transformacion (raw) sino son del anl */
-      if (substr(nombre_tabla_reducido, 1, 4) = 'TRN_') then
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
-      else
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table if exists ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || '_T rename to ' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del rename'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    EXECUTE ''alter table ' || OWNER_RD || '.' || reg_tabla.TABLE_NAME || ' attach partition ' || OWNER_TC || '.' || reg_tabla.TABLE_NAME || '_'' || fch_datos_in || '' for values from ('' || fch_datos_in || '') to ('' || v_fch_particion || '')'';');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''Después del attach'';');
-      end if;
-    end if;
-    --UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_TC || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', 2, 0, num_reg, 0, 0, 0, 0, fch_datos_in, inicio_paso_tmr);');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El timestamp del fin del paso es: %'', clock_timestamp();');
-    UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_comun_inserta_monitoreo (''' || nombre_fich_carga || ''', 2, 0, num_reg, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');
-    UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El segundo paso ha terminado correctamente.'';', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''));
-    UTL_FILE.put_line(fich_salida_pkg, '    --commit;');
-
     UTL_FILE.put_line(fich_salida_pkg, '  else');
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El procedimiento ' || nombre_fich_carga || ' ya se ha ejecutado previamente de manera exitosa.'';', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''));
     UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. No se ha vuelto a ejecutar.'';', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''));

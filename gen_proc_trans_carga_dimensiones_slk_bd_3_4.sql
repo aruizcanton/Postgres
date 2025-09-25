@@ -20,21 +20,21 @@ cursor MTDT_TABLA
     --WHERE TABLE_TYPE in ('I')
     and trim(TABLE_NAME) in 
     (
-    'TRN_PDUSG_ACCOUNT_DIM'   -- Generada
-    ,'TRN_SALES_CNL_DIM'      -- Generada
+    --'TRN_PDUSG_ACCOUNT_DIM'   -- Generada
+    --,'TRN_SALES_CNL_DIM'      -- Generada
      --'TRN_CSTMR_DVC_DIM'
     --, 'TRN_SALES_EMPE_DIM'    -- Generada X
     --, 'TRN_REFER_GEO_AREA_DIM' -- Generada
     --, 'TRN_SALES_ROLE_DIM'      --No se ha generado porque no esta especificado
     --, 'TRN_INSEC_SRC_STM_DIM' -- Generado X
     --,'TRN_PDSVC_SVC_DIM'     -- Error
-     , 'TRN_CSTMR_CSTMR_DIM'     -- Generado
+    -- , 'TRN_CSTMR_CSTMR_DIM'     -- Generado
     --, 'TRN_PDUSG_PYMT_ENT_DIM'  -- Generado X
     --'TRN_CSTMR_CSTMR_CLSS_DIM'  -- Generado X
-    , 'TRN_CSTMR_CSTMR_GRP_DIM' -- Generado X
+    --, 'TRN_CSTMR_CSTMR_GRP_DIM' -- Generado X
     --, 'TRN_CSTMR_DVC_DIM' -- X
     --, 'TRN_CSTMR_CSTMR_HLDG_DIM'  -- Generado
-   , 'TRN_CSTMR_IP_DIM'          -- Generado
+   --, 'TRN_CSTMR_IP_DIM'          -- Generado
     --, 'TRN_INSEC_SRC_OBJ_DIM'   -- Error en line 3370
     --, 'TRN_CSTMR_AR_CTC_PRFL_DIM'  -- Generado
     --'TRN_PDSVC_BANTRN_PDSVCTH_DIM'  --No se ha generado porque no esta especificado
@@ -45,7 +45,7 @@ cursor MTDT_TABLA
     --'TRN_PDSVC_PD_OFRG_DIM' --No se ha generado porque no esta especificado
     --, 'TRN_SALES_RTLR_DIM'    -- Generado
     --, 'TRN_INSEC_BTCH_DIM'  -- Error file write error
-    , 'TRN_PDUSG_SUBSCRIBER_DIM' -- X
+    --, 'TRN_PDUSG_SUBSCRIBER_DIM' -- X
     --, 'TRN_PDSVC_SVC_DIM'
     --, 'TRN_CSTMR_DVC_DIM'  -- X
     --, 'TRN_CSTMR_IP_DIM'  --X
@@ -83,12 +83,13 @@ cursor MTDT_TABLA
     --, 'SVC_AR_DIM'
     --FIN SP4
     ----------
-
+    -- FASE II
+    'TRN_SALES_BR_DIM'
+    , 'TRN_PDSVC_SVC_DIM'
+    , 'TRN_PDUSG_PYMT_PRD_DIM'
+    , 'PYMT_PRD_DIM'
+    , 'BR_DIM'
     )
-    --(
-    --'SA_SOLAPES_DESC', 'SA_DESHACE_SOLAPES_DESC'
-    --)
-    --('NGD_PRIMARY_OFFER')
     order by
     TABLE_NAME;
     --and TRIM(TABLE_NAME) not in;
@@ -915,6 +916,10 @@ cursor MTDT_TABLA
         /* Busco VAR_FCH_CARGA */
         cadena_resul := regexp_replace(cadena_resul, '#VAR_FCH_CARGA#', 'fch_carga_in');
         cadena_resul := regexp_replace(cadena_resul, '#VAR_FCH_DATOS#', 'fch_datos_in');
+        cadena_resul := regexp_replace(cadena_resul, '#VAR_FCH_CARGA_BINT#', 'v_fch_carga_in_bint');
+        cadena_resul := regexp_replace(cadena_resul, '#VAR_FCH_DATOS_BINT#', 'v_fch_datos_in_bint');
+        cadena_resul := regexp_replace(cadena_resul, '#VAR_FCH_CARGA_DIA_ANT_BINT#', 'v_fch_carga_dia_ant_bint');
+        cadena_resul := regexp_replace(cadena_resul, '#VAR_FCH_DATOS_DIA_ANT_BINT#', 'v_fch_datos_dia_ant_bint');
         /* Busco VAR_FCH_INICIO */
         cadena_resul := regexp_replace(cadena_resul, '#VAR_FCH_INICIO#', 'var_fch_inicio');
 
@@ -3289,6 +3294,11 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_in_bint bigint := cast(fch_carga_in as bigint);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_in_bint bigint :=  cast(fch_datos_in as bigint);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_carga_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_datos_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
+
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
           UTL_FILE.put_line(fich_salida_pkg, '');
           /********************************************************************/
@@ -3575,6 +3585,10 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_in_bint bigint := cast(fch_carga_in as bigint);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_in_bint bigint :=  cast(fch_datos_in as bigint);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_carga_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_datos_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
           UTL_FILE.put_line(fich_salida_pkg, '');
           UTL_FILE.put_line(fich_salida_pkg, '');
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
@@ -3779,6 +3793,10 @@ begin
           UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
           UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_in_bint bigint := cast(fch_carga_in as bigint);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_in_bint bigint :=  cast(fch_datos_in as bigint);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_carga_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
+          UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_datos_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
           UTL_FILE.put_line(fich_salida_pkg, '');
           UTL_FILE.put_line(fich_salida_pkg, '');
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
@@ -3995,6 +4013,10 @@ begin
             UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_in_bint bigint := cast(fch_carga_in as bigint);');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_in_bint bigint :=  cast(fch_datos_in as bigint);');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_carga_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_datos_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
             UTL_FILE.put_line(fich_salida_pkg, '');
             UTL_FILE.put_line(fich_salida_pkg, '');
             UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');            
@@ -4250,6 +4272,10 @@ begin
             UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio TIMESTAMP := current_timestamp;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_code text;');
             UTL_FILE.put_line(fich_salida_pkg, '  v_error_msg text;');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_in_bint bigint := cast(fch_carga_in as bigint);');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_in_bint bigint :=  cast(fch_datos_in as bigint);');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_carga_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_carga_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
+            UTL_FILE.put_line(fich_salida_pkg, '  v_fch_datos_dia_ant_bint bigint :=  cast(TO_CHAR(TO_DATE(fch_datos_in, ''YYYYMMDD'') - INTERVAL ''1 day'', ''YYYYMMDD'') AS NUMERIC);');
             UTL_FILE.put_line(fich_salida_pkg, '');
             UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');            
             UTL_FILE.put_line(fich_salida_pkg, '');
@@ -4540,7 +4566,10 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := clock_timestamp();');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor timestamp del inicio del paso es: %.'', inicio_paso_tmr;');        
         UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_DM || '.' || nombre_proceso || '_T;');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El numero de registros final que se van a intercambiar es: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), num_reg;');      
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. El numero de registros final que se van a intercambiar es: %'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS''), num_reg;');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para desactivar los índices -i */
+        UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_adm_drop_table_indexes (''' || reg_tabla.TABLE_NAME || ''', ''' || OWNER_DM || ''');');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para desactivar los índices -f */
         UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
         UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_DM || '.' || reg_tabla.TABLE_NAME || ';');
         UTL_FILE.put_line(fich_salida_pkg, '    INSERT');
@@ -4578,6 +4607,10 @@ begin
         close MTDT_TC_DETAIL;
         UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || OWNER_DM || '.' || nombre_proceso || '_T');
         UTL_FILE.put_line(fich_salida_pkg, '    ;');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para activar los índices -i */
+        UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_adm_recreate_table_indexes (''' || reg_tabla.TABLE_NAME || ''', ''' || OWNER_DM || ''');');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para activar los índices -f */
+        UTL_FILE.put_line(fich_salida_pkg, '    ');
         UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_comun_inserta_monitoreo (''' || nombre_fich_carga || ''', 2, 0, num_reg, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');
         UTL_FILE.put_line(fich_salida_pkg, '    --commit;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El segundo paso ha terminado correctamente.'';');
@@ -4586,7 +4619,11 @@ begin
         UTL_FILE.put_line(fich_salida_pkg, '    /* comienza el segundo paso */');
         UTL_FILE.put_line(fich_salida_pkg, '    inicio_paso_tmr := current_timestamp;');
         UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''%. Comienza el segundo paso'', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
-        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor timestamp del inicio del paso es: %.'', inicio_paso_tmr;');        
+        UTL_FILE.put_line(fich_salida_pkg, '    RAISE NOTICE ''El valor timestamp del inicio del paso es: %.'', inicio_paso_tmr;');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para desactivar los índices -i */
+        UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_adm_drop_table_indexes (''' || reg_tabla.TABLE_NAME || ''', ''' || OWNER_DM || ''');');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para desactivar los índices -f */
+        UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_DM || '.' || reg_tabla.TABLE_NAME || ';');
         UTL_FILE.put_line(fich_salida_pkg, '    INSERT');
         UTL_FILE.put_line(fich_salida_pkg, '    INTO ' || OWNER_DM || '.' || reg_tabla.TABLE_NAME);
         UTL_FILE.put_line(fich_salida_pkg, '    (');
@@ -4622,6 +4659,9 @@ begin
         close MTDT_TC_DETAIL;
         UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || OWNER_DM || '.' || nombre_proceso || '_T');
         UTL_FILE.put_line(fich_salida_pkg, '    ;');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para activar los índices -i */
+        UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_adm_recreate_table_indexes (''' || reg_tabla.TABLE_NAME || ''', ''' || OWNER_DM || ''');');
+        /* (20250925) Angel Ruiz. Meto la llamada al procedimiento para activar los índices -f */
         UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_DM || '.prc_comun_inserta_monitoreo (''' || nombre_fich_exchange || ''', 2, 0, numero_reg, 0, 0, 0, 0, fch_carga_in, fch_datos_in, inicio_paso_tmr);');
 
         UTL_FILE.put_line(fich_salida_pkg, '    --commit;');
@@ -4714,7 +4754,7 @@ begin
       UTL_FILE.put_line(fich_salida_load, '    then');
       UTL_FILE.put_line(fich_salida_load, '        SUBJECT="${INTERFAZ}:Error en InsertarFinFallido"');
       UTL_FILE.put_line(fich_salida_load, '        echo "${INTERFAZ}: Error al intentar insertar un registro en el metadato." | mailx -s "${SUBJECT}" "${CTA_MAIL}"');
-      UTL_FILE.put_line(fich_salida_load, '        ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
+      --UTL_FILE.put_line(fich_salida_load, '        ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
       UTL_FILE.put_line(fich_salida_load, '        exit 1;');
       UTL_FILE.put_line(fich_salida_load, '    fi');
       UTL_FILE.put_line(fich_salida_load, '    return 0');
@@ -4728,7 +4768,7 @@ begin
       UTL_FILE.put_line(fich_salida_load, '    then');
       UTL_FILE.put_line(fich_salida_load, '        SUBJECT="${INTERFAZ}:Error en InsertarFinOK"');
       UTL_FILE.put_line(fich_salida_load, '        echo "${INTERFAZ}: Error al intentar insertar un registro en el metadato." | mailx -s "${SUBJECT}" "${CTA_MAIL}"');
-      UTL_FILE.put_line(fich_salida_load, '        ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
+      --UTL_FILE.put_line(fich_salida_load, '        ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
       UTL_FILE.put_line(fich_salida_load, '        exit 1;');
       UTL_FILE.put_line(fich_salida_load, '    fi');
       UTL_FILE.put_line(fich_salida_load, '    return 0');
@@ -4817,7 +4857,7 @@ begin
       UTL_FILE.put_line(fich_salida_load, 'err_salida=$?');
       UTL_FILE.put_line(fich_salida_load, 'if [ ${err_salida} -ne 0 ]; then');
       UTL_FILE.put_line(fich_salida_load, '  SUBJECT="${INTERFAZ}: Surgio un error en el postgres en la llamada a prc_' || nombre_proceso || '. Error:  ${err_salida}."');
-      UTL_FILE.put_line(fich_salida_load, '  ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
+      --UTL_FILE.put_line(fich_salida_load, '  ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
       UTL_FILE.put_line(fich_salida_load, '  echo "${SUBJECT}" >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_ne' || '_' || nombre_proceso || '_${FECHA_HORA}".log');        
       UTL_FILE.put_line(fich_salida_load, '  echo "$(date)" >> ' || '"${' || NAME_DM || '_TRAZAS}/' || 'load_ne' || '_' || nombre_proceso || '_${FECHA_HORA}.log"');
       UTL_FILE.put_line(fich_salida_load, '  InsertaFinFallido');

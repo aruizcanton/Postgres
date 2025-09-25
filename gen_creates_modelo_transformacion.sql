@@ -20,34 +20,34 @@ DECLARE
     FROM MTDT_MODELO_SUMMARY
     WHERE TRIM(CI) <> 'P' and /* Las que poseen un valor "P" en esta columna son las tablas de PERMITED_VALUES, por lo que no hya que generar su modelo */
     SUBSTR(TRIM(TABLE_NAME), 1, 4) = 'TRN_' /* (20250211). Angel Ruiz. Tablas de transformación */    
-    and trim(TABLE_NAME) in (   
+    --and trim(TABLE_NAME) in (   
       /* (20250224)SP1*/
-      'TRN_PDUSG_SUBSCRIBER_DIM'
-      ,'TRN_PDUSG_ACCOUNT_DIM'
-      ,'TRN_SALES_CNL_DIM'
-      ,'TRN_CSTMR_DVC_DIM'
-      ,'TRN_SALES_EMPE_DIM'
-      ,'TRN_REFER_GEO_AREA_DIM'
-      ,'TRN_SALES_ROLE_DIM'
-      ,'TRN_INSEC_SRC_STM_DIM'
-      ,'TRN_PDSVC_SVC_DIM'
-      ,'TRN_CSTMR_CSTMR_DIM'
-      ,'TRN_PDUSG_PYMT_ENT_DIM'
-      ,'TRN_CSTMR_CSTMR_CLSS_DIM'
-      ,'TRN_CSTMR_CSTMR_GRP_DIM'
-      ,'TRN_CSTMR_CSTMR_HLDG_DIM'
-      ,'TRN_CSTMR_IP_DIM'
-      ,'TRN_INSEC_SRC_OBJ_DIM'
-      ,'TRN_CSTMR_AR_CTC_PRFL_DIM'
-      ,'TRN_PDSVC_BANTRN_PDSVCTH_DIM'
-      ,'TRN_PDUSG_COLL_PYMT_MTH_DIM'
-      ,'TRN_NTWRK_NTW_CMPT_DIM'
-      ,'TRN_FINAN_ORG_DIM'
-      ,'TRN_PDSVC_PD_DIM'
-      ,'TRN_PDSVC_PD_OFRG_DIM'
-      ,'TRN_SALES_RTLR_DIM'
-      ,'TRN_INSEC_BTCH_DIM'
-      ,'TRN_PDUSG_MVMT_SUBS_FCT'
+      --'TRN_PDUSG_SUBSCRIBER_DIM'
+      --,'TRN_PDUSG_ACCOUNT_DIM'
+      --,'TRN_SALES_CNL_DIM'
+      --,'TRN_CSTMR_DVC_DIM'
+      --,'TRN_SALES_EMPE_DIM'
+      --,'TRN_REFER_GEO_AREA_DIM'
+      --,'TRN_SALES_ROLE_DIM'
+      --,'TRN_INSEC_SRC_STM_DIM'
+      --,'TRN_PDSVC_SVC_DIM'
+      --,'TRN_CSTMR_CSTMR_DIM'
+      --,'TRN_PDUSG_PYMT_ENT_DIM'
+      --,'TRN_CSTMR_CSTMR_CLSS_DIM'
+      --,'TRN_CSTMR_CSTMR_GRP_DIM'
+      --,'TRN_CSTMR_CSTMR_HLDG_DIM'
+      --,'TRN_CSTMR_IP_DIM'
+      --,'TRN_INSEC_SRC_OBJ_DIM'
+      --,'TRN_CSTMR_AR_CTC_PRFL_DIM'
+      --,'TRN_PDSVC_BANTRN_PDSVCTH_DIM'
+      --,'TRN_PDUSG_COLL_PYMT_MTH_DIM'
+      --,'TRN_NTWRK_NTW_CMPT_DIM'
+      --,'TRN_FINAN_ORG_DIM'
+      --,'TRN_PDSVC_PD_DIM'
+      --,'TRN_PDSVC_PD_OFRG_DIM'
+      --,'TRN_SALES_RTLR_DIM'
+      --,'TRN_INSEC_BTCH_DIM'
+      --,'TRN_PDUSG_MVMT_SUBS_FCT'
       -- FIN SP1
       -------------------------
           -------------------------
@@ -65,12 +65,12 @@ DECLARE
           --,'INV_PRD_DIM'
           --,'INV_TP_DIM'
           --,'RCR_TP_DIM'
-          ,'TRN_PDUSG_INV_PRD_DIM'
-          ,'TRN_PDUSG_INV_ITM_DIM'
-          ,'TRN_PDUSG_CSTMR_DOC_FCT'
-          ,'TRN_PDUSG_CSTMR_INV_DTL_FCT'
-          ,'TRN_PDUSG_CSTMR_INV_FCT'
-          ,'TRN_PDUSG_CSTMR_PNDG_DOC_FCT'
+          --,'TRN_PDUSG_INV_PRD_DIM'
+          --,'TRN_PDUSG_INV_ITM_DIM'
+          --,'TRN_PDUSG_CSTMR_DOC_FCT'
+          --,'TRN_PDUSG_CSTMR_INV_DTL_FCT'
+          --,'TRN_PDUSG_CSTMR_INV_FCT'
+          --,'TRN_PDUSG_CSTMR_PNDG_DOC_FCT'
           --,'TRN_PDUSG_CSTMR_COLLECT_FCT' se suprimió
           -------------------------
           -- SP3
@@ -78,17 +78,24 @@ DECLARE
         --, 'BNDL_DIM'
         --, 'HH_MVMT_FCT'
         --, 'HH_TRCKNG_FCT'
-        , 'TRN_CSTMR_HH_DIM'
+        --, 'TRN_CSTMR_HH_DIM'
         ----------------------------
         -- SP4
         --, 'PRVN_SVC_TRCKNG_FCT'
         --, 'PRVN_SVC_AR_DIM'
         --, 'SVC_AR_DIM'
-        , 'TRN_PDUSG_SVC_AR_DIM'
-        , 'TRN_PDUSG_PRVN_SVC_AR_DIM'
-        , 'TRN_PDUSG_PRVN_SVC_TRCKNG_FCT'
-      
-    )
+        --, 'TRN_PDUSG_SVC_AR_DIM'
+        --, 'TRN_PDUSG_PRVN_SVC_AR_DIM'
+        --, 'TRN_PDUSG_PRVN_SVC_TRCKNG_FCT'
+        -- FASE II
+        --, 'TRN_PDUSG_CSTMR_DOC_FCT'
+        --, 'TRN_PDUSG_PRVN_SVC_MVMT_FCT'
+        --, 'TRN_PDUSG_CSTMR_COLL_DTL_FCT'
+        --, 'TRN_PDUSG_CSTMR_COLL_FCT'
+        --, 'TRN_PDUSG_CSTMR_COLL_PYMT_FCT'
+        --, 'TRN_SALES_BR_DIM'
+        --, 'TRN_PDUSG_PYMT_PRD_DIM'
+    --)
     ;    
     
   CURSOR c_mtdt_modelo_logico_COLUMNA (table_name_in IN VARCHAR2)
@@ -486,14 +493,16 @@ BEGIN
             END IF;
           end loop;
         end if;
-      ELSE
+      --ELSE
         /* No hay PK definida en la especificación */
         /* Tenemos que mirar si hay un campo de particionado */
-        IF v_tipo_particionado != 'S' THEN
-          /* La tabla esta particionada */
-          DBMS_OUTPUT.put_line(',' || ' PRIMARY KEY (');
-          DBMS_OUTPUT.put_line(v_nombre_campo_particionado || ')');
-        END IF;
+        /* 20250912 (Angel Ruiz). No está generando bien los creates. Si no hay campo de PK, */
+        /* no debe incluir la clausula de PK y la está incluyendo por el código de más abojo */
+        --IF v_tipo_particionado != 'S' THEN
+        --  /* La tabla esta particionada */
+        --  DBMS_OUTPUT.put_line(',' || ' PRIMARY KEY (');
+        --  DBMS_OUTPUT.put_line(v_nombre_campo_particionado || ')');
+        --END IF;
       END IF;
       DBMS_OUTPUT.put_line(')');  /* Parentesis final del create */
       if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0)

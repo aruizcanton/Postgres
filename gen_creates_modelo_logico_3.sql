@@ -437,8 +437,12 @@ BEGIN
         if (v_tipo_particionado = 'D') then
           /* Se trata de un particionado diario */
           DBMS_OUTPUT.put_line('PARTITION BY RANGE (' || v_nombre_campo_particionado || ')');
-          if (r_mtdt_modelo_logico_TABLA.TABLESPACE is not null) then
+          /* 20250912 Ángel Ruiz. Para el caso de TIGO, las tablas de hechos no llevan tablespace */
+          /* porque están distribuidas y las tablas distribuidas */
+          if (r_mtdt_modelo_logico_TABLA.TABLESPACE is not null and r_mtdt_modelo_logico_TABLA.DISTRIBUTION_COL is null) then
             DBMS_OUTPUT.put_line('TABLESPACE ' || r_mtdt_modelo_logico_TABLA.TABLESPACE || ';');
+          elsif (r_mtdt_modelo_logico_TABLA.TABLESPACE is not null and r_mtdt_modelo_logico_TABLA.DISTRIBUTION_COL is not null) THEN
+            DBMS_OUTPUT.put_line(';');
           else
             DBMS_OUTPUT.put_line(';');
           end if;

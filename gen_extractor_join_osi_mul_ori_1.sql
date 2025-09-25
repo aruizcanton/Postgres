@@ -96,8 +96,16 @@ SELECT
 --,'PYMT_MTH'
 --,'PRVN_SVC_FIX'
 --,'PRVN_SVC'
-'CNL', 'CNL_FIX'
+--'CNL', 'CNL_FIX'
     -- FIN SP2
+    -- FASE II
+    'CSTMR_COLLECT'
+    --, 'CSTMR_COLLECT_FIX'
+    --, 'CSTMR_CNCLLD_DOC'
+    --, 'UPDOWN_GRADE_CONTRATO'
+    --, 'BRANCH'
+    --, 'BRANCH_FIX'
+    --, 'CAUSA_PAGO'
     );
     
     --and trim(MTDT_EXT_SCENARIO_1.TABLE_NAME) in ('PARQUE_PROMO_CAMPANA', 'MOV_PROMO_CAMPANA'
@@ -1686,6 +1694,7 @@ SELECT
               v_table_look_up := v_table_look_up;
             end if;
             mitabla_look_up := v_table_look_up || ' ' || v_alias_table_look_up;
+            dbms_output.put_line('El valor de mitabla_look_up es: ' || mitabla_look_up);
             /* Busco si estaba ya en el FROM. Como es una tabla con ALIAS */
             /* si ya estaba en el FROM entonces no la vuelo a meter ya que tiene un ALIAS */
             v_encontrado:='N';
@@ -1695,20 +1704,25 @@ SELECT
               if (regexp_count(l_FROM_solo_tablas(indx), mitabla_look_up) >0) then
               --if (l_FROM(indx) = ', ' || OWNER_EX || '.' || reg_detalle_in.TABLE_LKUP) then
                 /* La misma tabla ya estaba en otro lookup */
+                dbms_output.put_line('El valor de l_FROM_solo_tablas(indx) es: ' || l_FROM_solo_tablas(indx));
                 v_encontrado:='Y';
               end if;
             END LOOP;
+            dbms_output.put_line('El valor de v_encontrado es: ' || v_encontrado);
             if (v_encontrado='N') then
               /* Solo la introduzco si la tabla no estaba ya */
               --l_FROM (l_FROM.last) := ', ' || procesa_campo_filter(reg_detalle_in.TABLE_LKUP);
               /*(20180305) Angel Ruiz. NF. Sintaxis OSI de los JOIN*/
               --l_FROM (l_FROM.last) := ', ' || mitabla_look_up;
+              dbms_output.put_line('Entro en el v_encontrado igual a N.');
               l_FROM_solo_tablas (l_FROM_solo_tablas.last) := ', ' || mitabla_look_up;
               /* (20170306) Angel Ruiz. NF: Sintasix Beeline */
-              if (reg_detalle_in.OUTER = 'Y') then
+              if (upper(reg_detalle_in.OUTER) = 'Y') then
                 l_FROM (l_FROM.last) := 'LEFT OUTER JOIN ' || mitabla_look_up || ' ';
+                dbms_output.put_line('Lo anyado a la parte del OUTER JOIN. EL VALOR ANYADIDO ES: ' || l_FROM (l_FROM.last));
               else
                 l_FROM (l_FROM.last) := 'INNER JOIN ' || mitabla_look_up || ' ';
+                dbms_output.put_line('Lo anyado a la parte del INNER JOIN. EL VALOR ANYADIDO ES: ' || l_FROM (l_FROM.last));
               end if;
               /* (20170306) Angel Ruiz. FIN NF: Sintasix Beeline */
               /*(20180305) Angel Ruiz. FIN NF. Sintaxis OSI de los JOIN*/
@@ -1991,7 +2005,7 @@ SELECT
           l_FROM (l_FROM.last) := l_FROM (l_FROM.last) || l_WHERE_ON_clause(indx);
         END LOOP;
         l_FROM (l_FROM.last) := l_FROM (l_FROM.last) || ')';
-        
+        dbms_output.put_line('EL VALOR FINAL QUE SE VA HA ANYADIR AL FROM ES: ' || l_FROM (l_FROM.last));
       when 'LKUPD' then
         if (reg_detalle_in.LKUP_COM_RULE is not null) then
           /* Ocurre que tenemos una regla compuesta, un LKUP con una condicion */

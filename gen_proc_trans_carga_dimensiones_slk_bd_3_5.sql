@@ -4,6 +4,8 @@
 /******/
 /******/
 /* EN ESTA VERSIÓN del generador NO HAY EXCHANGE YA QUE TODO SE HACE EN EL ln_ */
+/* En esta versión cambio la forma de tratar las secuencias en las dimensiones */
+/* En esta versión las secuencias sólo van a crearse en la dimensión y no en su tabla auxiliar */
 /******/
 /******/
 
@@ -84,12 +86,11 @@ cursor MTDT_TABLA
     --FIN SP4
     ----------
     -- FASE II
-    --'TRN_SALES_BR_DIM'
-     'TRN_PDSVC_SVC_DIM'
+    'TRN_SALES_BR_DIM'
+    , 'TRN_PDSVC_SVC_DIM'
     , 'TRN_PDUSG_PYMT_PRD_DIM'
-    --, 'PYMT_PRD_DIM'
-    --, 'BR_DIM'
-    , 'TRN_PDUSG_ENTT_PRMTR_DIM'
+    , 'PYMT_PRD_DIM'
+    , 'BR_DIM'
     )
     order by
     TABLE_NAME;
@@ -900,13 +901,13 @@ cursor MTDT_TABLA
   function procesa_campo_filter (cadena_in in varchar2) return varchar2
   is
     lon_cadena integer;
-    cabeza                varchar2 (32000);
-    sustituto              varchar2(32000);
-    cola                      varchar2(32000);    
+    cabeza                varchar2 (30000);
+    sustituto              varchar2(5000);
+    cola                      varchar2(30000);    
     pos                   PLS_integer;
     pos_ant           PLS_integer;
     posicion_ant           PLS_integer;
-    cadena_resul varchar(32000);
+    cadena_resul varchar(30000);
     begin
       dbms_output.put_line('Comienzo procesa_campo_filter.');
       lon_cadena := length (cadena_in);
@@ -1111,7 +1112,7 @@ cursor MTDT_TABLA
     mi_tabla_base_name_alias VARCHAR2(50);
     v_tipo_campo  VARCHAR2(30);
     v_alias_table_base  VARCHAR2(40);
-    v_tabla_base_name VARCHAR2(32000);
+    v_tabla_base_name VARCHAR2(10000);
     constante         VARCHAR2(500);
     v_nombre_func_lookup             VARCHAR2(40);
     v_nombre_paquete                    VARCHAR2(40);
@@ -1390,15 +1391,12 @@ cursor MTDT_TABLA
         /* (20150130) Angel Ruiz */
         /* Nueva incidencia. */
         if (regexp_instr (reg_detalle_in.TABLE_LKUP,'[Ss][Ee][Ll][Ee][Cc][Tt] ') > 0) then
-          dbms_output.put_line('Estoy en el IF donde detecto que la tabla de LKUP es un SELECT');
           /* Aparecen queries en lugar de tablas en la columna de nombre de tabla para LookUp */
           if (REGEXP_LIKE(reg_detalle_in.TABLE_LKUP, '\) *[a-zA-Z_0-9]+$')) then
           /* (20160629) Angel Ruiz. NF: Se aceptan tablas de LKUP que son SELECT que ademas tienen un ALIAS */
             v_alias := trim(substr(REGEXP_SUBSTR (reg_detalle_in.TABLE_LKUP, '\) *[a-zA-Z_0-9]+$'), 2));
             mitabla_look_up := procesa_campo_filter(reg_detalle_in.TABLE_LKUP);
             v_alias_incluido := 1;
-            dbms_output.put_line('Estoy en el IF donde detecto que la tabla de LKUP es un SELECT con ALIAS. El alias es: ' || v_alias);
-            dbms_output.put_line('La tabla de LKUP es: ' || mitabla_look_up);
           else
             v_alias := 'LKUP_' || l_FROM.count;
             --mitabla_look_up := '(' || reg_detalle_in.TABLE_LKUP || ') "LKUP_' || l_FROM.count || '"';
@@ -1416,7 +1414,7 @@ cursor MTDT_TABLA
           end if;
         else
           /* (20161111) Angel Ruiz. NF. Puede haber ALIAS EN LA TABLA DE LOOKUP */
-          dbms_output.put_line('Dentro del ELSE que detecta que la tabla de LKUP no es un SELECT');
+          dbms_output.put_line('Dentro del ELSE del SELECT');
           /* (20160401) Detectamos si la tabla de LookUp posee Alias */
           v_reg_table_lkup := procesa_campo_filter(reg_detalle_in.TABLE_LKUP);
           if (REGEXP_LIKE(trim(v_reg_table_lkup), '^[a-zA-Z_0-9#\.&]+ +[a-zA-Z_0-9]+$') = true) then
@@ -2377,7 +2375,10 @@ cursor MTDT_TABLA
         v_hay_regla_seq := true;
         --v_nombre_seq := 'SEQ_' || substr(reg_detalle_in.TABLE_COLUMN, 5);
         --v_nombre_seq := 'SEQ_' || substr(regexp_substr(reg_detalle_in.TABLE_COLUMN, '_[A-Za-z_]+$'), 2);
-        v_nombre_seq := reg_detalle_in.VALUE;
+        /* (20250926) Angel Ruiz. Para el cambio de la secuencia -i */
+        --v_nombre_seq := reg_detalle_in.VALUE;
+        v_nombre_seq := lower(reg_detalle_in.TABLE_NAME) || '_' || lower(reg_detalle_in.TABLE_COLUMN) || '_seq';
+        /* (20250926) Angel Ruiz. Para el cambio de la secuencia -f */        
         v_nombre_campo_seq := reg_detalle_in.TABLE_COLUMN;
         
       when 'BASE' then
@@ -2753,7 +2754,7 @@ cursor MTDT_TABLA
           l_WHERE.extend;
           l_WHERE(l_WHERE.last) :=  ' AND ' || procesa_condicion_lookup(reg_detalle_in.TABLE_LKUP_COND, v_alias);
         end if;
-      when 'LKUPD' then
+        when 'LKUPD' then
           if (reg_detalle_in.LKUP_COM_RULE is not null) then
             /* Ocurre que tenemos una regla compuesta, un LKUP con una condicion */
             cadena := trim(reg_detalle_in.LKUP_COM_RULE);
@@ -4601,12 +4602,20 @@ begin
           fetch MTDT_TC_DETAIL
           into reg_detail;
           exit when MTDT_TC_DETAIL%NOTFOUND;
-          if primera_col = 1 then
-            UTL_FILE.put_line(fich_salida_pkg, '    ' || reg_detail.TABLE_COLUMN);
+          if (primera_col = 1) then
+            if (upper(reg_detail.RUL) = 'SEQ') then
+              UTL_FILE.put_line(fich_salida_pkg, '    coalesce(' || reg_detail.TABLE_COLUMN || ', nextval(''' || v_nombre_seq || '''::regclass))');
+            else
+              UTL_FILE.put_line(fich_salida_pkg, '    ' || reg_detail.TABLE_COLUMN);
+            end if;
             primera_col := 0;
           else
-            UTL_FILE.put_line(fich_salida_pkg, '    ,' || reg_detail.TABLE_COLUMN);
-          end if;        
+            if (upper(reg_detail.RUL) = 'SEQ') then
+              UTL_FILE.put_line(fich_salida_pkg, '    , coalesce(' || reg_detail.TABLE_COLUMN || ', nextval(''' || v_nombre_seq || '''::regclass))');
+            else
+              UTL_FILE.put_line(fich_salida_pkg, '    ,' || reg_detail.TABLE_COLUMN);
+            end if;
+          end if;
         end loop;
         close MTDT_TC_DETAIL;
         UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || OWNER_DM || '.' || nombre_proceso || '_T');

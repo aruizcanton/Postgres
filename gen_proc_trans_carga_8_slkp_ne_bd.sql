@@ -66,13 +66,13 @@ SELECT
       -- FASE II
       -------------------------------
       'TRN_PDUSG_CSTMR_DOC_FCT'
-      , 'TRN_PDUSG_CSTMR_COLL_DTL_FCT'
-      , 'TRN_PDUSG_CSTMR_COLL_FCT'
-      , 'TRN_PDUSG_CSTMR_COLL_PYMT_FCT'
-      , 'TRN_PDUSG_PRVN_SVC_MVMT_FCT'
-      , 'PRVN_SVC_MVMT_FCT'
+      --, 'TRN_PDUSG_CSTMR_COLL_DTL_FCT'
+      --, 'TRN_PDUSG_CSTMR_COLL_FCT'
+      --, 'TRN_PDUSG_CSTMR_COLL_PYMT_FCT'
+      --, 'TRN_PDUSG_PRVN_SVC_MVMT_FCT'
+      --, 'PRVN_SVC_MVMT_FCT'
       , 'CSTMR_DOC_FCT'
-      , 'CSTMR_DBT_FCT'
+      --, 'CSTMR_DBT_FCT'
     );
     
   cursor MTDT_SCENARIO (table_name_in IN VARCHAR2)
@@ -3287,7 +3287,7 @@ begin
         lista_variables_rownumber.delete;
         UTL_FILE.put_line(fich_salida_pkg, '');
         --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE IMMEDIATE ''INSERT');
-        UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_TC || '.' || reg_scenario.SCENARIO || '_' || nombre_proceso || ';');
+        UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_TC || '.fnc_' || reg_scenario.SCENARIO || '_' || nombre_proceso || ';');
         UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_TC || '.fnc_' || reg_scenario.SCENARIO || '_' || nombre_proceso || ' (fch_carga_in varchar(8), fch_datos_in varchar(8))');
         UTL_FILE.put_line(fich_salida_pkg, 'RETURNS integer AS $$');
         UTL_FILE.put_line(fich_salida_pkg, 'DECLARE');
@@ -3397,7 +3397,7 @@ begin
         UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_insertadas;');
         UTL_FILE.put_line(fich_salida_pkg,'  EXCEPTION');
         UTL_FILE.put_line(fich_salida_pkg,'  WHEN OTHERS THEN');
-        UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''%. Se ha producido un error en la inserción del escenario INTEGRACIÓN: ' || reg_scenario.SCENARIO || '_' || nombre_proceso || ''', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
+        UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''%. Se ha producido un error en la inserción del escenario: ' || reg_scenario.SCENARIO || '_' || nombre_proceso || ''', to_char(clock_timestamp(), ''YYYYMMDD HH24:MI:SS'');');
         UTL_FILE.put_line(fich_salida_pkg,'    GET STACKED DIAGNOSTICS v_error_code := RETURNED_SQLSTATE, v_error_msg := MESSAGE_TEXT;');
         UTL_FILE.put_line(fich_salida_pkg,'    RAISE NOTICE ''Error code: %. Mensaje: %'', v_error_code, v_error_msg;');
         UTL_FILE.put_line(fich_salida_pkg,'    RAISE EXCEPTION USING ERRCODE = v_error_code, MESSAGE = v_error_msg;');

@@ -121,11 +121,19 @@ DECLARE
 -- FASE II
 'CSTMR_COLLECT'
 , 'CSTMR_COLLECT_FIX'
-, 'CSTMR_CNCLLD_DOC'
-, 'UPDOWN_GRADE_CONTRATO'
-, 'BRANCH'
-, 'BRANCH_FIX'
-, 'CAUSA_PAGO'
+--, 'CSTMR_CNCLLD_DOC'
+--, 'UPDOWN_GRADE_CONTRATO'
+--, 'BRANCH'
+--, 'BRANCH_FIX'
+--, 'CAUSA_PAGO'
+, 'PYMT_REASON'
+, 'PYMT_REASON_FIX'
+, 'PYMT_REASON_DTL_FIX'
+, 'TELE_COLLECT'
+, 'TELE_PYMT_TP'
+, 'TELE_COLLECT_POINT'
+, 'CSTMR_INV'
+, 'CSTMR_INV_FIX'
     );
     --and trim(CONCEPT_NAME) in ('CUENTA', 'PARQUE_ABO_PRE');
     --and TRIM(CONCEPT_NAME) in ('RECARGAS_MVNO', 'CANAL', 'CADENA', 'SUBTIPO_CANAL', 'MEDIO_RECARGA', 'ERROR_RECARGA');
@@ -766,14 +774,14 @@ BEGIN
       /* ya que por motivos de validacion se quiere cargar otro fichero */
       if (reg_summary.FILE_VALIDATION is null) then
       /* Se carga el fichero normal */
-        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql:\/\/${BD_USUARIO}@${HOST}:${PORT}/${DB_NAME}?sslmode=prefer" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
+        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql:\/\/${BD_USUARIO}@${HOST}:${PORT}\/${DB_NAME}?sslmode=prefer/g" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE_NAME_ESCAPADO}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
         UTL_FILE.put_line(fich_salida_sh, '  # Llamada a pgloader');
         UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log' || ' 2>&' || '1'); 
         --UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero .load generado en vuelo.');
         --UTL_FILE.put_line(fich_salida_sh, '  rm "${' || NAME_DM || '_LDR}/${NOMBRE_FICH_LDR}"');
       else
       /* Se carga el fichero alternativo para validacion */
-        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql:\/\/${BD_USUARIO}@${HOST}:${PORT}/${DB_NAME}?sslmode=prefer" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
+        UTL_FILE.put_line(fich_salida_sh, '  sed -e "s/__URL_DESTINO__/postgresql:\/\/${BD_USUARIO}@${HOST}:${PORT}\/${DB_NAME}?sslmode=prefer/g" -e "s/__RUTA_AL_FICHERO_CSV__/${FILE_NAME_ESCAPADO}/g" -e "s/__INTERFACE_NAME__/${NOMBRE_FICH_DATOS}/g" -e "s/__FCH_DATOS__/${FCH_DATOS}/g" -e "s/__FCH_DATOS_MAS_UNO__/$(("${FCH_DATOS}"+1))/g" "${' || NAME_DM || '_LDR}"/stg_' || reg_summary.CONCEPT_NAME || '.load > '  || '"${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
 
         UTL_FILE.put_line(fich_salida_sh, '  # Llamada a pgloader');
         UTL_FILE.put_line(fich_salida_sh, '  pgloader "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"' || ' >> "${' || NAME_DM || '_TRAZAS}/load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}".log' || ' 2>&' || '1'); 
@@ -796,13 +804,13 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero .load generado en vuelo.');
       UTL_FILE.put_line(fich_salida_sh, '  rm "${' || NAME_DM || '_TMP}/${NOMBRE_FICH_LDR}"');
       UTL_FILE.put_line(fich_salida_sh, '');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=$(grep "Total import time" ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log | awk -F'' '' '' { printf "%d",$4 } '')');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=$(grep "Total import time" ' || '"${' || NAME_DM || '_TRAZAS}"/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_"${FECHA_HORA}".log' || ' | awk -F'' '' '' { printf "%d",$4 } '')');
       UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=$((REG_RECHAZADOS/2)) # Se divide por 2 porque por alguna razón es el doble.');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_INSERTADOS=$(grep "Total import time" ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log | awk -F'' '' '' { printf "%d",$4 } '')');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_INSERTADOS=$(grep "Total import time" ' || '"${' || NAME_DM || '_TRAZAS}"/' || 'load_stg' || '_' || reg_summary.CONCEPT_NAME || '_"${FECHA_HORA}".log' || ' | awk -F'' '' '' { printf "%d",$5 } '')');
       UTL_FILE.put_line(fich_salida_sh, '  REG_LEIDOS=$((REG_INSERTADOS+REG_RECHAZADOS))');
-      UTL_FILE.put_line(fich_salida_sh, '  TOT_LEIDOS=$((TOT_LEIDOS + REG_LEIDOS))');
-      UTL_FILE.put_line(fich_salida_sh, '  TOT_INSERTADOS=$((TOT_INSERTADOS + REG_INSERTADOS))');
-      UTL_FILE.put_line(fich_salida_sh, '  TOT_RECHAZADOS=$((TOT_RECHAZADOS} + REG_RECHAZADOS))');
+      UTL_FILE.put_line(fich_salida_sh, '  TOT_LEIDOS=$((TOT_LEIDOS+REG_LEIDOS))');
+      UTL_FILE.put_line(fich_salida_sh, '  TOT_INSERTADOS=$((TOT_INSERTADOS+REG_INSERTADOS))');
+      UTL_FILE.put_line(fich_salida_sh, '  TOT_RECHAZADOS=$((TOT_RECHAZADOS+REG_RECHAZADOS))');
       UTL_FILE.put_line(fich_salida_sh, '');
 
       UTL_FILE.put_line(fich_salida_sh, 'done');

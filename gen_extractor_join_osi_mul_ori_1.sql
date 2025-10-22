@@ -100,12 +100,20 @@ SELECT
     -- FIN SP2
     -- FASE II
     'CSTMR_COLLECT'
-    --, 'CSTMR_COLLECT_FIX'
+    , 'CSTMR_COLLECT_FIX'
     --, 'CSTMR_CNCLLD_DOC'
     --, 'UPDOWN_GRADE_CONTRATO'
     --, 'BRANCH'
     --, 'BRANCH_FIX'
     --, 'CAUSA_PAGO'
+    , 'PYMT_REASON'
+    , 'PYMT_REASON_FIX'
+    , 'PYMT_REASON_DTL_FIX'
+    , 'TELE_COLLECT'
+    , 'TELE_PYMT_TP'
+    , 'TELE_COLLECT_POINT'
+    , 'CSTMR_INV'
+    , 'CSTMR_INV_FIX'
     );
     
     --and trim(MTDT_EXT_SCENARIO_1.TABLE_NAME) in ('PARQUE_PROMO_CAMPANA', 'MOV_PROMO_CAMPANA'
@@ -385,7 +393,20 @@ SELECT
       
       /* (20180302) Angel Ruiz. FIN. Implemento la funcion de Oracle TO_CHAR */
     else
-      v_cadena_result := alias_in || '.' || cadena_in;    
+      if (instr(cadena_in, '.') > 0) then
+        /* el campo esta cualificado con ALIAS */
+        if (outer_in = 1) then
+          v_cadena_result := cadena_in || '(+)';
+        else
+          v_cadena_result := cadena_in;
+        end if;
+      else      
+        if (outer_in = 1) then
+          v_cadena_result := alias_in || '.' || cadena_in || '(+)';
+        else
+          v_cadena_result := alias_in || '.' || cadena_in;
+        end if;
+      end if;
     end if;
     return v_cadena_result;
   end;
@@ -988,13 +1009,13 @@ SELECT
   function procesa_campo_filter (cadena_in in varchar2) return varchar2
   is
     lon_cadena integer;
-    cabeza                varchar2 (2000);
-    sustituto              varchar2(100);
-    cola                      varchar2(2000);    
+    cabeza                varchar2 (25000);
+    sustituto              varchar2(500);
+    cola                      varchar2(25000);    
     pos                   PLS_integer;
     pos_ant           PLS_integer;
     posicion_ant           PLS_integer;
-    cadena_resul varchar(20000);
+    cadena_resul varchar(25000);
     begin
       lon_cadena := length (cadena_in);
       pos := 0;
@@ -1666,7 +1687,7 @@ SELECT
           /*(20180305) Angel Ruiz. NF. Sintaxis OSI de los JOIN*/
           --l_FROM (l_FROM.last) := ', ' || mitabla_look_up;
           l_FROM_solo_tablas (l_FROM_solo_tablas.last) := ', ' || mitabla_look_up;
-          if (reg_detalle_in.OUTER = 'Y') then
+          if (upper(reg_detalle_in.OUTER) = 'Y') then
             l_FROM (l_FROM.last) := 'LEFT OUTER JOIN ' || mitabla_look_up || ' ';
           else
             l_FROM (l_FROM.last) := 'INNER JOIN ' || mitabla_look_up || ' ';
@@ -1770,7 +1791,7 @@ SELECT
               --l_FROM (l_FROM.last) := ', ' || procesa_campo_filter(reg_detalle_in.TABLE_LKUP) || ' "' || v_alias || '"' ;
               /*(20180305) Angel Ruiz. NF. Sintaxis OSI de los JOIN*/
               /* (20170306) Angel Ruiz. NF: Sintasix Beeline */
-              if (reg_detalle_in.OUTER = 'Y') then
+              if (upper(reg_detalle_in.OUTER) = 'Y') then
                 l_FROM (l_FROM.last) := 'LEFT OUTER JOIN ' || mitabla_look_up || ' ' || v_alias || ' ' ;
               else
                 l_FROM (l_FROM.last) := 'INNER JOIN ' || mitabla_look_up || ' ' || v_alias || ' ' ;
@@ -1784,7 +1805,7 @@ SELECT
               --l_FROM (l_FROM.last) := ', ' || procesa_campo_filter(reg_detalle_in.TABLE_LKUP);
               /* (20170306) Angel Ruiz. NF: Sintasix Beeline */
               --l_FROM (l_FROM.last) := ', ' || mitabla_look_up;
-              if (reg_detalle_in.OUTER = 'Y') then
+              if (upper(reg_detalle_in.OUTER) = 'Y') then
                 l_FROM (l_FROM.last) := 'LEFT OUTER JOIN ' || mitabla_look_up || ' ';
               else
                 l_FROM (l_FROM.last) := 'INNER JOIN ' || mitabla_look_up || ' ';
@@ -1942,16 +1963,19 @@ SELECT
                   /* (20161004) Angel Ruiz. BUG.Ocurre que puede ponersele al campo IE_COLUMN_LKUP un ALIAS. */
                   /* pero este ALIAS no corresponde con el ALIAS de la tabla TABLE_BASE_NAME, sino de otra tabla LOOKUP */
                   /* por lo que dejamos el campo IE_COLUMN_LKUP con el alias que trae */
-                  if instr(reg_detalle_in.IE_COLUMN_LKUP, '.') > 0 then
+                  if (instr(reg_detalle_in.IE_COLUMN_LKUP, '.') > 0 and instr(reg_detalle_in.IE_COLUMN_LKUP, '.') = 0) then
                     /* (20161004) Angel Ruiz. Dejamos el campo IE_COLUMN_LKUP con el alias que trae */
                     l_WHERE_ON_clause(l_WHERE_ON_clause.last) := reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || v_alias || '.' || reg_detalle_in.TABLE_COLUMN_LKUP;
+                  elsif (instr(reg_detalle_in.IE_COLUMN_LKUP, '.') = 0 and instr(reg_detalle_in.TABLE_COLUMN_LKUP, '.') > 0) then
+                    l_WHERE_ON_clause(l_WHERE_ON_clause.last) := v_alias_table_base_name || '.' || reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || reg_detalle_in.TABLE_COLUMN_LKUP;
                   else                  
-                    l_WHERE_ON_clause(l_WHERE_ON_clause.last) := v_alias_table_base_name || '.' || reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || v_alias || '.' || reg_detalle_in.TABLE_COLUMN_LKUP;
+                    l_WHERE_ON_clause(l_WHERE_ON_clause.last) := reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || reg_detalle_in.TABLE_COLUMN_LKUP;
                   end if;
                 elsif (instr(reg_detalle_in.IE_COLUMN_LKUP, v_alias_table_base_name || '.') = 0 and instr(reg_detalle_in.TABLE_COLUMN_LKUP, v_alias || '.') > 0) then
                   l_WHERE_ON_clause(l_WHERE_ON_clause.last) := v_alias_table_base_name || '.' || reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || reg_detalle_in.TABLE_COLUMN_LKUP;
                 else
-                  l_WHERE_ON_clause(l_WHERE_ON_clause.last) := reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || v_alias || '.' || reg_detalle_in.TABLE_COLUMN_LKUP;
+                  --l_WHERE_ON_clause(l_WHERE_ON_clause.last) := reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || v_alias || '.' || reg_detalle_in.TABLE_COLUMN_LKUP;
+                  l_WHERE_ON_clause(l_WHERE_ON_clause.last) := reg_detalle_in.IE_COLUMN_LKUP ||  ' = ' || reg_detalle_in.TABLE_COLUMN_LKUP;
                 end if;
               end if;
             else  /* sino es el primer campo del Where  */
@@ -1977,12 +2001,12 @@ SELECT
                     /* (20161004) Angel Ruiz. Dejamos el campo IE_COLUMN_LKUP con el alias que trae */
                     l_WHERE_ON_clause(l_WHERE_ON_clause.last) :=  ' AND ' || reg_detalle_in.IE_COLUMN_LKUP || ' = ' || v_alias || '.' || reg_detalle_in.TABLE_COLUMN_LKUP;
                   else
-                    l_WHERE_ON_clause(l_WHERE_ON_clause.last) :=  ' AND ' || v_alias_table_base_name || '.' || reg_detalle_in.IE_COLUMN_LKUP || ' = ' || v_alias || '.' || reg_detalle_in.TABLE_COLUMN_LKUP;
+                    l_WHERE_ON_clause(l_WHERE_ON_clause.last) :=  ' AND ' || v_alias_table_base_name || '.' || reg_detalle_in.IE_COLUMN_LKUP || ' = ' || reg_detalle_in.TABLE_COLUMN_LKUP;
                   end if;
                 elsif (instr(reg_detalle_in.IE_COLUMN_LKUP, v_alias_table_base_name || '.') = 0 and instr(reg_detalle_in.TABLE_COLUMN_LKUP, v_alias || '.') > 0) then
                   l_WHERE_ON_clause(l_WHERE_ON_clause.last) :=  ' AND ' || v_alias_table_base_name || '.' || reg_detalle_in.IE_COLUMN_LKUP || ' = ' || reg_detalle_in.TABLE_COLUMN_LKUP;
                 else
-                  l_WHERE_ON_clause(l_WHERE_ON_clause.last) :=  ' AND ' || reg_detalle_in.IE_COLUMN_LKUP || ' = ' || v_alias || '.' || reg_detalle_in.TABLE_COLUMN_LKUP;
+                  l_WHERE_ON_clause(l_WHERE_ON_clause.last) :=  ' AND ' || reg_detalle_in.IE_COLUMN_LKUP || ' = ' || reg_detalle_in.TABLE_COLUMN_LKUP;
                 end if;
               end if;
             end if;
